@@ -355,6 +355,58 @@ def test_update_settings(client):
     assert body["notify_3_days_before"] is True
 
 
+def test_plan_no_loans_returns_empty(client):
+    r = client.get("/api/plan")
+    assert r.status_code == 200
+    body = r.json()
+    assert "recommendations" in body
+    assert "saved_months" in body
+    assert "closing_date_all" in body
+
+
+def test_plan_with_loan_has_recommendations(client):
+    client.post("/api/loans", json=LOAN_RATE_PAYLOAD)
+    r = client.get("/api/plan")
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["recommendations"]) >= 1
+    rec = body["recommendations"][0]
+    assert "loan_name" in rec
+    assert "mandatory_amount" in rec
+    assert "extra_amount" in rec
+
+
+def test_plan_strategy_query_param(client):
+    client.post("/api/loans", json=LOAN_RATE_PAYLOAD)
+    client.put("/api/settings", json={"monthly_budget": "15000.00"})
+    r_av = client.get("/api/plan?strategy=avalanche")
+    r_sn = client.get("/api/plan?strategy=snowball")
+    assert r_av.status_code == 200
+    assert r_sn.status_code == 200
+    assert r_av.json()["strategy"] == "avalanche"
+    assert r_sn.json()["strategy"] == "snowball"
+
+
+def test_plan_budget_shortfall(client):
+    client.post("/api/loans", json=LOAN_RATE_PAYLOAD)
+    # Loan mandatory = 9455.96; budget 1000 < mandatory
+    r = client.get("/api/plan?strategy=avalanche&monthly_budget=1000")
+    body = r.json()
+    assert body["budget_shortfall"] is not None
+    assert Decimal(str(body["budget_shortfall"])) > Decimal("0")
+
+
+def test_plan_closing_date_present(client):
+    client.post("/api/loans", json=LOAN_RATE_PAYLOAD)
+    r = client.get("/api/plan")
+    body = r.json()
+    assert body["closing_date_all"] is not None
+    # Should be a valid ISO date
+    from datetime import date
+    dt = date.fromisoformat(body["closing_date_all"])
+    assert dt > date.today()
+
+
 def test_summary_returns_valid_shape(client):
     r = client.get("/api/summary")
     assert r.status_code == 200

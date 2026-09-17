@@ -9,6 +9,7 @@ import { AddLoanScreen } from './screens/AddLoanScreen'
 import { LoanDetailScreen } from './screens/LoanDetailScreen'
 import { RecordPaymentScreen } from './screens/RecordPaymentScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
+import { StrategyScreen } from './screens/StrategyScreen'
 import type { LoanDetail } from './api/types'
 
 type Screen =
@@ -17,6 +18,7 @@ type Screen =
   | { name: 'loan-detail'; loanId: string }
   | { name: 'record-payment'; loanId: string }
   | { name: 'settings' }
+  | { name: 'strategy' }
 
 export default function App() {
   useTelegramReady()
@@ -35,7 +37,7 @@ export default function App() {
           key={refreshKey}
           onAddLoan={() => go({ name: 'add-loan' })}
           onLoanClick={id => go({ name: 'loan-detail', loanId: id })}
-          onStrategyClick={() => go({ name: 'settings' })}
+          onStrategyClick={() => go({ name: 'strategy' })}
         />
       )
 
@@ -69,5 +71,14 @@ export default function App() {
 
     case 'settings':
       return <SettingsScreen onBack={() => go({ name: 'home' })} />
+
+    case 'strategy':
+      return (
+        <StrategyScreen
+          onDone={home}
+          onBack={() => go({ name: 'home' })}
+          onAddLoan={() => go({ name: 'add-loan' })}
+        />
+      )
   }
 }

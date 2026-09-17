@@ -13,7 +13,7 @@ from typing import Optional
 
 from fastapi import FastAPI
 
-from backend.api import loans, payments, summary
+from backend.api import loans, payments, summary, plan
 from backend.api import settings as settings_router
 from backend.config import settings
 
@@ -78,6 +78,7 @@ app.include_router(loans.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
 app.include_router(settings_router.router, prefix="/api")
 app.include_router(summary.router, prefix="/api")
+app.include_router(plan.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])

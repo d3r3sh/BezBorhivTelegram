@@ -57,6 +57,7 @@ class LoanSnapshot:
     remaining_balance: Decimal
     annual_rate: Decimal      # e.g. Decimal("24") means 24% per year
     monthly_payment: Decimal  # mandatory monthly payment
+    name: str = ""            # optional display name for recommendations
 
 
 # ---------------------------------------------------------------------------
