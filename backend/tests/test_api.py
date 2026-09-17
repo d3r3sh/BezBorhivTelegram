@@ -57,33 +57,35 @@ def test_auth_valid_init_data(engine, auth_headers):
     from backend.config import settings
     from backend.main import app
     from backend.db.session import get_db
-    import os
 
-    settings.BOT_TOKEN = "7123456789:AATestBotTokenForTestingOnly12345678"
-    settings.AUTH_MAX_AGE = 0  # disable expiry check for test
+    original_token = settings.BOT_TOKEN
+    original_max_age = settings.AUTH_MAX_AGE
+    try:
+        settings.BOT_TOKEN = "7123456789:AATestBotTokenForTestingOnly12345678"
+        settings.AUTH_MAX_AGE = 0
 
-    TestSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+        TestSession = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
-    def _db_override():
-        s = TestSession()
-        try:
-            yield s
-        finally:
-            s.rollback()
-            s.close()
+        def _db_override():
+            s = TestSession()
+            try:
+                yield s
+            finally:
+                s.rollback()
+                s.close()
 
-    app.dependency_overrides[get_db] = _db_override
-    app.dependency_overrides.pop("get_current_user", None)
+        app.dependency_overrides[get_db] = _db_override
+        from backend.api.deps import get_current_user as gcu
+        app.dependency_overrides.pop(gcu, None)
 
-    # Remove the auth override so real validation runs
-    from backend.api.deps import get_current_user as gcu
-    app.dependency_overrides.pop(gcu, None)
-
-    with TestClient(app) as c:
-        r = c.get("/api/loans", headers=auth_headers)
-        assert r.status_code == 200
-
-    app.dependency_overrides.clear()
+        with TestClient(app) as c:
+            r = c.get("/api/loans", headers=auth_headers)
+            assert r.status_code == 200
+    finally:
+        # Restore token so subsequent client fixtures don't try to start the bot
+        settings.BOT_TOKEN = original_token
+        settings.AUTH_MAX_AGE = original_max_age
+        app.dependency_overrides.clear()
 
 
 # ---------------------------------------------------------------------------
