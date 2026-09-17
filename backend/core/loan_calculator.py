@@ -88,6 +88,11 @@ def _add_months(d: date, months: int) -> tuple[int, int]:
     return d.year + total // 12, total % 12 + 1
 
 
+def add_months(d: date, months: int) -> tuple[int, int]:
+    """Public alias for _add_months. Returns (year, month)."""
+    return _add_months(d, months)
+
+
 # ---------------------------------------------------------------------------
 # SRS 4.1 — Annuity payment
 # ---------------------------------------------------------------------------
@@ -298,7 +303,6 @@ def _count_remaining_payments(
         interest = round2(b * i)
         principal = round2(monthly_payment - interest)
         if principal <= Decimal("0"):
-            # Payment doesn't cover interest — degenerate case, cap
             count = max_iter
             break
         b = round2(b - principal)
