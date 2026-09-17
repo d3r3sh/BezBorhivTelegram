@@ -355,6 +355,25 @@ def test_update_settings(client):
     assert body["notify_3_days_before"] is True
 
 
+def test_summary_returns_valid_shape(client):
+    r = client.get("/api/summary")
+    assert r.status_code == 200
+    body = r.json()
+    assert "active_loan_count" in body
+    assert "total_debt" in body
+    assert "min_monthly" in body
+    assert "remaining_this_month" in body
+    assert "strategy" in body
+
+
+def test_summary_reflects_new_loan(client):
+    before = client.get("/api/summary").json()
+    client.post("/api/loans", json=LOAN_RATE_PAYLOAD)
+    after = client.get("/api/summary").json()
+    assert after["active_loan_count"] == before["active_loan_count"] + 1
+    assert Decimal(str(after["total_debt"])) > Decimal(str(before["total_debt"]))
+
+
 def test_update_settings_partial(client):
     """Partial update should not overwrite other fields."""
     client.put("/api/settings", json={"strategy": "snowball"})

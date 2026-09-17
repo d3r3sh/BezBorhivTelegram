@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tg-theme-bg-color: #F7F4ED;
+  --tg-theme-text-color: #2C2C2C;
+  --tg-theme-button-color: #5C8A6B;
+}
+
+body {
+  background-color: var(--tg-theme-bg-color, #F7F4ED);
+  color: var(--tg-theme-text-color, #2C2C2C);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+/* Safe area for iPhone notch / home indicator */
+.safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+/* Prevent tap highlight on interactive elements */
+button, a { -webkit-tap-highlight-color: transparent; }
+
+/* Scrollable without scrollbar */
+.scroll-hide::-webkit-scrollbar { display: none; }
+.scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
