@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     WEBAPP_URL: str = "https://example.com"
     # Timezone for notification scheduler (10:00 local)
     SCHEDULER_TIMEZONE: str = "Europe/Kyiv"
+    # JWT signing secret — set a strong random value in production
+    JWT_SECRET: str = "change-me-in-production"
+    # JWT token lifetime in days
+    JWT_EXPIRE_DAYS: int = 30
 
     class Config:
         env_file = ".env"

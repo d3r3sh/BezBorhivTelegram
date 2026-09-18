@@ -14,7 +14,7 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api import loans, payments, summary, plan
+from backend.api import loans, payments, summary, plan, auth as auth_router
 from backend.api import calendar as calendar_router
 from backend.api import settings as settings_router
 from backend.config import settings
@@ -85,6 +85,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router.router, prefix="/api")
 app.include_router(loans.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
 app.include_router(settings_router.router, prefix="/api")
