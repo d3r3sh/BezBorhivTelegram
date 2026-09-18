@@ -20,12 +20,9 @@ declare global {
   }
 }
 
-interface Props {
-  onWebAuth?: () => void
-}
+interface Props {}
 
-export function LandingPage({ onWebAuth }: Props) {
-  // Use a ref so the script callback always calls the latest handler
+export function LandingPage(_: Props) {
   const callbackRef = useRef<((user: TelegramWidgetUser) => void) | null>(null)
 
   callbackRef.current = async (user: TelegramWidgetUser) => {
@@ -38,7 +35,7 @@ export function LandingPage({ onWebAuth }: Props) {
       if (!res.ok) throw new Error(`Auth failed: ${res.status}`)
       const { access_token } = await res.json()
       localStorage.setItem(JWT_KEY, access_token)
-      onWebAuth?.()
+      window.location.reload()
     } catch (e) {
       console.error('Telegram widget auth failed', e)
     }

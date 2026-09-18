@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import WebApp from '@twa-dev/sdk'
 import { useTelegramReady } from './hooks/useTelegram'
 import { LandingPage } from './screens/LandingPage'
@@ -111,18 +112,18 @@ function TabBar({ current, onTab }: { current: string; onTab: (name: TabName) =>
 export default function App() {
   useTelegramReady()
 
-  // All hooks must be called unconditionally before any early returns
-  const [webAuthed, setWebAuthed] = useState(() => !!localStorage.getItem(JWT_KEY))
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [refreshKey, setRefreshKey] = useState(0)
 
+  const isAuthenticated = !!WebApp.initData || !!localStorage.getItem(JWT_KEY)
+
   const handleLogout = () => {
     localStorage.removeItem(JWT_KEY)
-    setWebAuthed(false)
+    window.location.reload()
   }
 
-  if (!WebApp.initData && !webAuthed) {
-    return <LandingPage onWebAuth={() => setWebAuthed(true)} />
+  if (!isAuthenticated) {
+    return <LandingPage />
   }
 
   const go = (s: Screen) => setScreen(s)
