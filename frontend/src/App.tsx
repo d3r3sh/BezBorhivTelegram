@@ -113,6 +113,11 @@ export default function App() {
 
   const [webAuthed, setWebAuthed] = useState(() => !!localStorage.getItem(JWT_KEY))
 
+  const handleLogout = () => {
+    localStorage.removeItem(JWT_KEY)
+    setWebAuthed(false)
+  }
+
   if (!WebApp.initData && !webAuthed) {
     return <LandingPage onWebAuth={() => setWebAuthed(true)} />
   }
@@ -171,7 +176,7 @@ export default function App() {
           />
         )
       case 'settings':
-        return <SettingsScreen onBack={home} />
+        return <SettingsScreen onBack={home} onLogout={handleLogout} />
       case 'strategy':
         return (
           <StrategyScreen

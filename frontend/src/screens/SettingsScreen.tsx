@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
+import WebApp from '@twa-dev/sdk'
 import { settingsApi } from '../api/settings'
 import { useBackButton } from '../hooks/useTelegram'
 import { LoadingSpinner } from '../components/LoadingSpinner'
+import { JWT_KEY } from '../api/client'
 import type { UserSettings, SettingsUpdatePayload } from '../api/types'
 
 interface Props {
   onBack: () => void
+  onLogout?: () => void
 }
 
-export function SettingsScreen({ onBack }: Props) {
+export function SettingsScreen({ onBack, onLogout }: Props) {
+  const isWebMode = !WebApp.initData && !!localStorage.getItem(JWT_KEY)
   useBackButton(onBack)
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
@@ -161,6 +165,23 @@ export function SettingsScreen({ onBack }: Props) {
             <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>bezborhiv.com · @bezborhivbot</p>
           </div>
         </div>
+
+        {/* ── Logout (web mode only) ── */}
+        {isWebMode && onLogout && (
+          <button
+            onClick={onLogout}
+            className="w-full neu-raised rounded-card px-5 py-4 flex items-center gap-3 active:opacity-70 transition-opacity"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--terracotta)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span className="text-[15px] font-medium" style={{ color: 'var(--terracotta)' }}>
+              Вийти з акаунту
+            </span>
+          </button>
+        )}
 
       </div>
     </div>
