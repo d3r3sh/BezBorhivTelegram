@@ -111,7 +111,10 @@ function TabBar({ current, onTab }: { current: string; onTab: (name: TabName) =>
 export default function App() {
   useTelegramReady()
 
+  // All hooks must be called unconditionally before any early returns
   const [webAuthed, setWebAuthed] = useState(() => !!localStorage.getItem(JWT_KEY))
+  const [screen, setScreen] = useState<Screen>({ name: 'home' })
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const handleLogout = () => {
     localStorage.removeItem(JWT_KEY)
@@ -121,9 +124,6 @@ export default function App() {
   if (!WebApp.initData && !webAuthed) {
     return <LandingPage onWebAuth={() => setWebAuthed(true)} />
   }
-
-  const [screen, setScreen] = useState<Screen>({ name: 'home' })
-  const [refreshKey, setRefreshKey] = useState(0)
 
   const go = (s: Screen) => setScreen(s)
   const home = () => { setScreen({ name: 'home' }); setRefreshKey(k => k + 1) }
