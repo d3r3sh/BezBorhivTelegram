@@ -91,25 +91,30 @@ export function HomeScreen({
 
         {/* ── Remaining this month ── */}
         {summary && hasLoans && (
-          <div className="neu-raised rounded-card px-5 py-4 flex justify-between items-center">
-            <span className="text-[13px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
-              Залишилось цього місяця
-            </span>
-            {allPaid ? (
-              <div className="flex items-center gap-2">
-                <span className="text-[20px] font-bold" style={{ color: 'var(--sage)' }}>
+          allPaid ? (
+            <div className="neu-raised rounded-card px-5 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-[13px] font-semibold mb-1" style={{ color: 'var(--text-secondary)' }}>
+                  Залишилось цього місяця
+                </p>
+                <p className="text-[17px] font-bold" style={{ color: 'var(--sage)' }}>
                   Цього місяця все внесено
-                </span>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--sage)">
-                  <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm-1.5 14.5-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7z"/>
-                </svg>
+                </p>
               </div>
-            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--sage)" className="flex-shrink-0 ml-3">
+                <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm-1.5 14.5-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7z"/>
+              </svg>
+            </div>
+          ) : (
+            <div className="neu-raised rounded-card px-5 py-4 flex justify-between items-center">
+              <span className="text-[13px] font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                Залишилось цього місяця
+              </span>
               <span className="text-[20px] font-bold" style={{ color: 'var(--text-primary)' }}>
                 {formatAmount(summary.remaining_this_month)}
               </span>
-            )}
-          </div>
+            </div>
+          )
         )}
 
         {/* ── Strategy banner ── */}

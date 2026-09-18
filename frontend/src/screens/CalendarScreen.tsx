@@ -181,15 +181,16 @@ export function CalendarScreen({ onBack, onLoanClick }: Props) {
     <div className="min-h-screen safe-top pb-8" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center px-5 pt-4 pb-3 gap-3">
+      <div className="flex items-center justify-between px-5 pt-4 pb-3">
         <button onClick={onBack} className="icon-btn w-[38px] h-[38px]">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
-        <h1 className="font-serif font-semibold text-[30px] leading-none" style={{ color: 'var(--text-primary)' }}>
-          Календар
-        </h1>
+        <span className="text-[17px] font-semibold" style={{ color: 'var(--text-primary)' }}>
+          Календар платежів
+        </span>
+        <div className="w-[38px]" />
       </div>
 
       {/* ── Month nav ── */}

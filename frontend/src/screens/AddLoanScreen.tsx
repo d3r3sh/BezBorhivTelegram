@@ -161,15 +161,6 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
           onChange={e => setAmount(e.target.value.replace(/\s/g, ''))}
         />
 
-        {/* Payments count */}
-        <InputField
-          label={scenario === 'existing' ? 'Платежів залишилось' : 'Кількість платежів'}
-          placeholder="24"
-          inputMode="numeric"
-          value={paymentsCount}
-          onChange={e => setPaymentsCount(e.target.value)}
-        />
-
         {/* Input mode segment */}
         <div>
           <p className="input-label mb-2">Що ви знаєте?</p>
@@ -197,6 +188,15 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
             onChange={e => setMonthlyPayment(e.target.value.replace(/\s/g, ''))}
           />
         )}
+
+        {/* Payments count */}
+        <InputField
+          label={scenario === 'existing' ? 'Платежів залишилось' : 'Кількість платежів'}
+          placeholder="36"
+          inputMode="numeric"
+          value={paymentsCount}
+          onChange={e => setPaymentsCount(e.target.value)}
+        />
 
         {/* Date */}
         <InputField

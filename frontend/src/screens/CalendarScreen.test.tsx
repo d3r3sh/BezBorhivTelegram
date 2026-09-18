@@ -33,7 +33,7 @@ beforeEach(() => {
 describe('CalendarScreen', () => {
   it('renders title', () => {
     render(<CalendarScreen onBack={vi.fn()} onLoanClick={vi.fn()} />)
-    expect(screen.getByText('Календар')).toBeTruthy()
+    expect(screen.getByText('Календар платежів')).toBeTruthy()
   })
 
   it('shows loan name after load (payment list or legend)', async () => {
