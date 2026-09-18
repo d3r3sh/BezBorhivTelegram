@@ -13,6 +13,7 @@ psycopg2-binary>=2.9.9
 
 # Scheduler
 apscheduler>=3.10.4
+pytz>=2024.1
 
 # Config & validation
 pydantic>=2.8.0
