@@ -3,7 +3,9 @@
  * The Telegram BackButton handles "go back" for all non-home screens.
  */
 import { useState } from 'react'
+import WebApp from '@twa-dev/sdk'
 import { useTelegramReady, useTelegramTheme } from './hooks/useTelegram'
+import { LandingPage } from './screens/LandingPage'
 import { HomeScreen } from './screens/HomeScreen'
 import { AddLoanScreen } from './screens/AddLoanScreen'
 import { LoanDetailScreen } from './screens/LoanDetailScreen'
@@ -25,6 +27,9 @@ type Screen =
 export default function App() {
   useTelegramReady()
   useTelegramTheme()
+
+  // Show landing page when opened outside Telegram
+  if (!WebApp.initData) return <LandingPage />
 
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [refreshKey, setRefreshKey] = useState(0)
