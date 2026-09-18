@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Generator
 
 from fastapi import Depends, Header, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.config import settings
@@ -39,8 +40,13 @@ def get_current_user(
 
     user = db.query(User).filter(User.telegram_id == telegram_id).first()
     if not user:
-        user = User(telegram_id=telegram_id)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+        try:
+            user = User(telegram_id=telegram_id)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        except IntegrityError:
+            # Race condition: another concurrent request created the user first
+            db.rollback()
+            user = db.query(User).filter(User.telegram_id == telegram_id).first()
     return user
