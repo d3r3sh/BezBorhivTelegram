@@ -30,14 +30,14 @@ export function LoanCard({ loan, onClick }: Props) {
                   ${isOverdue ? 'border-l-4 border-terracotta' : ''}`}
       onClick={onClick}
     >
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
           <span
-            className="w-3 h-3 rounded-full flex-shrink-0"
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ backgroundColor: color }}
           />
-          <span className="font-semibold text-text-primary truncate">{loan.name}</span>
+          <span className="font-semibold text-text-primary truncate text-[15px]">{loan.name}</span>
         </div>
         {isOverdue && (
           <span className="text-xs font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full flex-shrink-0">
@@ -46,25 +46,29 @@ export function LoanCard({ loan, onClick }: Props) {
         )}
       </div>
 
-      {/* Debt */}
-      <div className="text-xl font-bold text-text-primary">
+      {/* Total debt */}
+      <div className="text-2xl font-bold text-text-primary tracking-tight">
         {formatAmount(loan.total_debt)}
       </div>
 
-      {/* Progress bar */}
+      {/* Progress */}
       <ProgressBar percent={pct} />
 
-      {/* Next payment + counter */}
-      <div className="flex justify-between items-end text-sm">
-        <div>
-          {loan.next_payment_date && (
-            <span className="text-text-secondary">
-              <span className="text-text-primary font-semibold">
+      {/* Footer */}
+      <div className="flex justify-between items-center text-sm">
+        <div className="flex items-center gap-1.5">
+          {loan.next_payment_date ? (
+            <>
+              <span className={`font-semibold ${isOverdue ? 'text-terracotta' : 'text-text-primary'}`}>
                 {formatAmount(loan.next_payment_amount ?? loan.monthly_payment)}
               </span>
-              {' · '}
-              {formatShortDate(loan.next_payment_date)}
-            </span>
+              <span className="text-text-secondary">·</span>
+              <span className={`${isOverdue ? 'text-terracotta' : 'text-text-secondary'}`}>
+                {formatShortDate(loan.next_payment_date)}
+              </span>
+            </>
+          ) : (
+            <span className="text-green-600 font-semibold text-sm">Виплачено ✓</span>
           )}
         </div>
         <span className="text-text-secondary text-xs">
