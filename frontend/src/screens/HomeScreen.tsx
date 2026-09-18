@@ -12,9 +12,11 @@ interface Props {
   onLoanClick: (id: string) => void
   onStrategyClick: () => void
   onCalendarClick: () => void
+  onDebtClick: () => void
+  onArchiveClick: () => void
 }
 
-export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick, onCalendarClick }: Props) {
+export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick, onCalendarClick, onDebtClick, onArchiveClick }: Props) {
   const [loans, setLoans] = useState<Loan[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -46,9 +48,12 @@ export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick, onCalendar
 
   return (
     <div className="min-h-screen bg-cream safe-top safe-bottom pb-24">
-      {/* Summary banner */}
+      {/* Summary banner — тап відкриває DebtScreen (FR-MAIN-8) */}
       {summary && totalLoans > 0 && (
-        <div className="bg-gradient-to-br from-sage to-sage-dark text-white px-5 pt-6 pb-8">
+        <div
+          className="bg-gradient-to-br from-sage to-sage-dark text-white px-5 pt-6 pb-8 cursor-pointer active:opacity-90"
+          onClick={onDebtClick}
+        >
           <p className="text-sm opacity-80 mb-1">Загальний борг</p>
           <p className="text-3xl font-bold mb-4">{formatAmount(summary.total_debt)}</p>
           <div className="flex items-end justify-between">
@@ -119,6 +124,16 @@ export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick, onCalendar
             onClick={() => onLoanClick(loan.id)}
           />
         ))}
+
+        {/* Archive link */}
+        {totalLoans > 0 && (
+          <button
+            onClick={onArchiveClick}
+            className="w-full text-center text-text-secondary text-sm py-2"
+          >
+            📦 Архів закритих кредитів
+          </button>
+        )}
       </div>
 
       {/* FAB */}

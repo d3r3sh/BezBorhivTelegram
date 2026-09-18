@@ -13,16 +13,20 @@ import { RecordPaymentScreen } from './screens/RecordPaymentScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { StrategyScreen } from './screens/StrategyScreen'
 import { CalendarScreen } from './screens/CalendarScreen'
+import { DebtScreen } from './screens/DebtScreen'
+import { ArchiveScreen } from './screens/ArchiveScreen'
 import type { LoanDetail } from './api/types'
 
 type Screen =
   | { name: 'home' }
   | { name: 'add-loan'; loanId?: string }
   | { name: 'loan-detail'; loanId: string }
-  | { name: 'record-payment'; loanId: string }
+  | { name: 'record-payment'; loanId: string; initialType?: 'regular' | 'extra' }
   | { name: 'settings' }
   | { name: 'strategy' }
   | { name: 'calendar' }
+  | { name: 'debt' }
+  | { name: 'archive' }
 
 export default function App() {
   useTelegramReady()
@@ -46,6 +50,8 @@ export default function App() {
           onLoanClick={id => go({ name: 'loan-detail', loanId: id })}
           onStrategyClick={() => go({ name: 'strategy' })}
           onCalendarClick={() => go({ name: 'calendar' })}
+          onDebtClick={() => go({ name: 'debt' })}
+          onArchiveClick={() => go({ name: 'archive' })}
         />
       )
 
@@ -63,7 +69,7 @@ export default function App() {
         <LoanDetailScreen
           loanId={screen.loanId}
           onBack={() => go({ name: 'home' })}
-          onRecordPayment={id => go({ name: 'record-payment', loanId: id })}
+          onRecordPayment={(id, initialType) => go({ name: 'record-payment', loanId: id, initialType })}
           onEditLoan={id => go({ name: 'add-loan', loanId: id })}
         />
       )
@@ -72,6 +78,7 @@ export default function App() {
       return (
         <RecordPaymentScreen
           loanId={screen.loanId}
+          initialType={screen.initialType}
           onDone={() => go({ name: 'loan-detail', loanId: screen.loanId })}
           onBack={() => go({ name: 'loan-detail', loanId: screen.loanId })}
         />
@@ -92,6 +99,22 @@ export default function App() {
     case 'calendar':
       return (
         <CalendarScreen
+          onBack={() => go({ name: 'home' })}
+          onLoanClick={id => go({ name: 'loan-detail', loanId: id })}
+        />
+      )
+
+    case 'debt':
+      return (
+        <DebtScreen
+          onBack={() => go({ name: 'home' })}
+          onCalendarClick={() => go({ name: 'calendar' })}
+        />
+      )
+
+    case 'archive':
+      return (
+        <ArchiveScreen
           onBack={() => go({ name: 'home' })}
           onLoanClick={id => go({ name: 'loan-detail', loanId: id })}
         />

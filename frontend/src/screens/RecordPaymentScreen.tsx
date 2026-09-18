@@ -10,15 +10,16 @@ type PaymentType = 'regular' | 'extra'
 
 interface Props {
   loanId: string
+  initialType?: PaymentType
   onDone: () => void
   onBack: () => void
 }
 
-export function RecordPaymentScreen({ loanId, onDone, onBack }: Props) {
+export function RecordPaymentScreen({ loanId, initialType = 'regular', onDone, onBack }: Props) {
   useBackButton(onBack)
 
   const [loan, setLoan] = useState<Loan | null>(null)
-  const [type, setType] = useState<PaymentType>('regular')
+  const [type, setType] = useState<PaymentType>(initialType)
   const [amount, setAmount] = useState('')
   const [date, setDate] = useState(todayISO())
   const [loading, setLoading] = useState(false)

@@ -173,10 +173,15 @@ def get_loans(db: Session, user: User, archived: bool = False) -> List[LoanOut]:
     loans = (
         db.query(Loan)
         .filter(Loan.user_id == user.id, Loan.is_archived.is_(archived))
-        .order_by(Loan.created_at)
         .all()
     )
-    return [LoanOut(**_to_out(loan)) for loan in loans]
+    result = [LoanOut(**_to_out(loan)) for loan in loans]
+    # FR-MAIN-2: sort by next_payment_date ascending (overdue first, nulls last)
+    result.sort(key=lambda l: (
+        l.next_payment_date is None,
+        l.next_payment_date or date.max,
+    ))
+    return result
 
 
 def get_loan(db: Session, loan_id: UUID, user: User) -> LoanDetail:
