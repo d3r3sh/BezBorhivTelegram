@@ -94,7 +94,31 @@ export function LoanDetailScreen({ loanId, onBack, onRecordPayment, onEditLoan }
   const pct = initial.isZero() ? 0 : paid.div(initial).mul(100).toNumber()
   const isPaidOff = balance.isZero()
 
-  const visibleSchedule = showAll ? loan.schedule : loan.schedule.slice(0, 6)
+  // Build full schedule: paid rows + future/overdue rows
+  const paidRows = payments
+    .filter(p => !p.is_extra && p.planned_date && p.actual_date)
+    .sort((a, b) => (a.planned_date! > b.planned_date! ? 1 : -1))
+    .map((p, i) => ({
+      number: i + 1,
+      date: String(p.planned_date),
+      amount: String(p.planned_amount || p.actual_amount),
+      balance: null as string | null,
+      status: 'paid' as const,
+      actualAmount: String(p.actual_amount),
+    }))
+
+  const futureRows = loan.schedule.map((s, i) => ({
+    number: paidRows.length + i + 1,
+    date: String(s.date),
+    amount: String(s.amount),
+    balance: String(s.balance),
+    status: String(s.date) < today ? 'overdue' as const : 'future' as const,
+    actualAmount: null as string | null,
+  }))
+
+  const fullSchedule = [...paidRows, ...futureRows]
+  const visibleSchedule = showAll ? fullSchedule : fullSchedule.slice(0, 6)
+
   const closingDate = loan.schedule.length > 0
     ? loan.schedule[loan.schedule.length - 1].date
     : null
@@ -180,43 +204,68 @@ export function LoanDetailScreen({ loanId, onBack, onRecordPayment, onEditLoan }
       <div className="px-4 pt-3">
         {tab === 'schedule' && (
           <div className="bg-white rounded-card shadow-card-sm overflow-hidden">
-            {loan.schedule.length === 0 ? (
-              <p className="text-text-secondary text-sm text-center py-8">Всі платежі внесено</p>
+            {fullSchedule.length === 0 ? (
+              <p className="text-text-secondary text-sm text-center py-8">Немає платежів</p>
             ) : (
               <>
-                {visibleSchedule.map((row, i) => {
-                  const isOverdue = String(row.date) < today
-                  return (
-                    <div key={row.number}>
-                      <div className={`flex justify-between items-center px-4 py-3 text-sm
-                        ${isOverdue ? 'bg-terracotta/5' : ''}`}
-                      >
-                        <div className={`w-6 text-xs ${isOverdue ? 'text-terracotta' : 'text-text-secondary'}`}>
-                          {row.number}
-                        </div>
-                        <div className={`flex-1 px-2 text-xs ${isOverdue ? 'text-terracotta' : 'text-text-secondary'}`}>
-                          {formatShortDate(String(row.date))}
-                          {isOverdue && <span className="ml-1 font-semibold">!</span>}
-                        </div>
-                        <div className={`font-semibold ${isOverdue ? 'text-terracotta' : 'text-text-primary'}`}>
-                          {formatAmount(row.amount)}
-                        </div>
-                        <div className="text-text-secondary text-xs ml-2 w-20 text-right">
+                {visibleSchedule.map((row, i) => (
+                  <div key={`${row.status}-${row.number}`}>
+                    <div className={`flex items-center px-4 py-3 text-sm gap-2
+                      ${row.status === 'overdue' ? 'bg-terracotta/5' : ''}`}
+                    >
+                      {/* Status icon */}
+                      <div className="w-5 flex-none text-center">
+                        {row.status === 'paid' && (
+                          <span className="text-green-500 font-bold">✓</span>
+                        )}
+                        {row.status === 'overdue' && (
+                          <span className="text-terracotta font-bold text-xs">!</span>
+                        )}
+                        {row.status === 'future' && (
+                          <span className="text-text-secondary text-xs">{row.number}</span>
+                        )}
+                      </div>
+
+                      {/* Date */}
+                      <div className={`text-xs w-14 flex-none ${
+                        row.status === 'paid' ? 'text-text-secondary line-through'
+                        : row.status === 'overdue' ? 'text-terracotta'
+                        : 'text-text-secondary'
+                      }`}>
+                        {formatShortDate(row.date)}
+                      </div>
+
+                      {/* Amount */}
+                      <div className={`flex-1 font-semibold ${
+                        row.status === 'paid' ? 'text-green-600'
+                        : row.status === 'overdue' ? 'text-terracotta'
+                        : 'text-text-primary'
+                      }`}>
+                        {formatAmount(row.status === 'paid' && row.actualAmount
+                          ? row.actualAmount
+                          : row.amount)}
+                      </div>
+
+                      {/* Balance or diff */}
+                      {row.status === 'paid' ? (
+                        <span className="text-xs text-green-500 font-medium">Оплачено</span>
+                      ) : row.balance ? (
+                        <div className="text-text-secondary text-xs w-20 text-right">
                           /{formatAmount(row.balance)}
                         </div>
-                      </div>
-                      {i < visibleSchedule.length - 1 && (
-                        <div className="border-b border-gray-100 mx-4" />
-                      )}
+                      ) : null}
                     </div>
-                  )
-                })}
-                {loan.schedule.length > 6 && !showAll && (
+                    {i < visibleSchedule.length - 1 && (
+                      <div className="border-b border-gray-100 mx-4" />
+                    )}
+                  </div>
+                ))}
+                {fullSchedule.length > 6 && !showAll && (
                   <button
                     onClick={() => setShowAll(true)}
                     className="w-full py-3 text-sage text-sm font-semibold border-t border-gray-100"
                   >
-                    Показати всі {loan.schedule.length} платежів
+                    Показати всі {fullSchedule.length} платежів
                   </button>
                 )}
               </>

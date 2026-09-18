@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Decimal from 'decimal.js'
+import WebApp from '@twa-dev/sdk'
 import { paymentsApi } from '../api/payments'
 import { loansApi } from '../api/loans'
 import { formatAmount, todayISO } from '../utils/format'
@@ -36,11 +37,45 @@ export function RecordPaymentScreen({ loanId, initialType = 'regular', onDone, o
     })
   })
 
-  const handleSave = async () => {
+  const checkWarningsAndSave = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       setError('Введіть суму > 0'); return
     }
     setError(null)
+
+    if (type === 'regular' && loan) {
+      const entered = new Decimal(amount.replace(/\s/g, ''))
+      const min = new Decimal(String(loan.monthly_payment))
+      const recommended = loan.next_payment_amount
+        ? new Decimal(String(loan.next_payment_amount))
+        : null
+
+      // FR-FORECAST-2: underpayment warning
+      if (entered.lt(min)) {
+        const confirmed = await new Promise<boolean>(r =>
+          WebApp.showConfirm(
+            `Сума менша за мінімальний платіж (${formatAmount(loan.monthly_payment)}). Термін погашення збільшиться. Все одно зберегти?`,
+            r,
+          )
+        )
+        if (!confirmed) return
+      }
+      // FR-FORECAST-2: motivational (entered >= min but < recommended)
+      else if (recommended && entered.lt(recommended) && recommended.gt(min)) {
+        const confirmed = await new Promise<boolean>(r =>
+          WebApp.showConfirm(
+            `Якщо внести рекомендовану суму (${formatAmount(recommended.toString())}), закриєте кредит раніше. Все одно зберегти ${formatAmount(entered.toString())}?`,
+            r,
+          )
+        )
+        if (!confirmed) return
+      }
+    }
+
+    await handleSave()
+  }
+
+  const handleSave = async () => {
     setLoading(true)
     try {
       await paymentsApi.record(loanId, {
@@ -134,7 +169,7 @@ export function RecordPaymentScreen({ loanId, initialType = 'regular', onDone, o
         {error && <p className="text-terracotta text-sm px-1">{error}</p>}
 
         <button
-          onClick={handleSave}
+          onClick={checkWarningsAndSave}
           disabled={loading}
           className="w-full bg-sage text-white font-bold py-4 rounded-button
                      active:bg-sage-dark transition-colors disabled:opacity-50"
