@@ -106,3 +106,24 @@ export interface SettingsUpdatePayload {
   notify_1_day_before?: boolean
   notify_3_days_before?: boolean
 }
+
+export interface CalendarEvent {
+  date: string
+  loan_id: string
+  loan_name: string
+  color_index: number
+  planned_amount: string | number
+  is_paid: boolean
+  is_overdue: boolean
+}
+
+export interface LoanColor {
+  loan_id: string
+  loan_name: string
+  color_index: number
+}
+
+export interface CalendarData {
+  events: CalendarEvent[]
+  active_loans: LoanColor[]
+}

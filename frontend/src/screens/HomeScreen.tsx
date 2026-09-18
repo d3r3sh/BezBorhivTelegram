@@ -11,9 +11,10 @@ interface Props {
   onAddLoan: () => void
   onLoanClick: (id: string) => void
   onStrategyClick: () => void
+  onCalendarClick: () => void
 }
 
-export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick }: Props) {
+export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick, onCalendarClick }: Props) {
   const [loans, setLoans] = useState<Loan[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -50,17 +51,26 @@ export function HomeScreen({ onAddLoan, onLoanClick, onStrategyClick }: Props) {
         <div className="bg-gradient-to-br from-sage to-sage-dark text-white px-5 pt-6 pb-8">
           <p className="text-sm opacity-80 mb-1">Загальний борг</p>
           <p className="text-3xl font-bold mb-4">{formatAmount(summary.total_debt)}</p>
-          <div className="flex gap-4 text-sm">
-            <div>
-              <p className="opacity-70">Мінімальні</p>
-              <p className="font-semibold">{formatAmount(summary.min_monthly)} / міс</p>
-            </div>
-            {summary.recommended_monthly && (
+          <div className="flex items-end justify-between">
+            <div className="flex gap-4 text-sm">
               <div>
-                <p className="opacity-70">Рекомендовані</p>
-                <p className="font-semibold">{formatAmount(summary.recommended_monthly)} / міс</p>
+                <p className="opacity-70">Мінімальні</p>
+                <p className="font-semibold">{formatAmount(summary.min_monthly)} / міс</p>
               </div>
-            )}
+              {summary.recommended_monthly && (
+                <div>
+                  <p className="opacity-70">Рекомендовані</p>
+                  <p className="font-semibold">{formatAmount(summary.recommended_monthly)} / міс</p>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onCalendarClick}
+              className="flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40
+                         rounded-xl px-3 py-1.5 text-white text-xs font-medium transition-colors"
+            >
+              📅 Календар
+            </button>
           </div>
         </div>
       )}

@@ -12,7 +12,11 @@ from backend.db.models import Base  # noqa: E402 — must be after sys.path upda
 from backend.config import settings  # noqa: E402
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Railway sometimes gives "postgres://" but SQLAlchemy requires "postgresql://"
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgres://"):
+    _db_url = "postgresql://" + _db_url[len("postgres://"):]
+config.set_main_option("sqlalchemy.url", _db_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

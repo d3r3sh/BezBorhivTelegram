@@ -12,8 +12,10 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api import loans, payments, summary, plan
+from backend.api import calendar as calendar_router
 from backend.api import settings as settings_router
 from backend.config import settings
 
@@ -74,11 +76,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="БезБоргів API", version="0.1.0", lifespan=lifespan)
 
+# Allow cross-origin requests from the Telegram Mini App (served from Vercel)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(loans.router, prefix="/api")
 app.include_router(payments.router, prefix="/api")
 app.include_router(settings_router.router, prefix="/api")
 app.include_router(summary.router, prefix="/api")
 app.include_router(plan.router, prefix="/api")
+app.include_router(calendar_router.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["meta"])

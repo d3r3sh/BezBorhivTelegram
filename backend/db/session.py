@@ -4,10 +4,15 @@ from typing import Generator
 
 from backend.config import settings
 
+# Railway sometimes gives "postgres://" but SQLAlchemy requires "postgresql://"
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgres://"):
+    _db_url = "postgresql://" + _db_url[len("postgres://"):]
+
 engine = create_engine(
-    settings.DATABASE_URL,
+    _db_url,
     # Required for SQLite; ignored by PostgreSQL
-    connect_args={"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {},
+    connect_args={"check_same_thread": False} if _db_url.startswith("sqlite") else {},
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

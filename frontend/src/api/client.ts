@@ -5,7 +5,9 @@
  */
 import WebApp from '@twa-dev/sdk'
 
-export const API_BASE = ''   // same origin; Vite proxy handles /api → backend
+// In dev: Vite proxy forwards /api → localhost:8000, so API_BASE stays empty.
+// In production (Vercel): set VITE_API_URL to the Railway backend URL.
+export const API_BASE = (import.meta.env.VITE_API_URL as string) ?? ''
 
 class ApiError extends Error {
   constructor(
