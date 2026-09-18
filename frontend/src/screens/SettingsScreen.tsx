@@ -41,29 +41,36 @@ export function SettingsScreen({ onBack }: Props) {
 
   const strategyLabel: Record<string, string> = {
     none: 'Не обрано',
-    avalanche: '🌊 Лавина',
-    snowball: '⛄️ Сніжний ком',
+    avalanche: 'Лавина',
+    snowball: 'Сніжний ком',
   }
 
   return (
-    <div className="min-h-screen bg-cream safe-top">
-      {/* Header */}
-      <div className="px-5 pt-6 pb-4">
-        <h1 className="text-2xl font-bold text-text-primary">Налаштування</h1>
+    <div className="min-h-screen" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+
+      {/* ── Header ── */}
+      <div className="px-5 pb-4">
+        <h1 className="font-serif font-semibold text-[30px] leading-none" style={{ color: 'var(--text-primary)' }}>
+          Ще
+        </h1>
       </div>
 
-      <div className="px-4 pb-8 flex flex-col gap-5">
+      <div className="px-5 pb-8 flex flex-col gap-6">
 
-        {/* Budget */}
-        <Section title="БЮДЖЕТ НА МІСЯЦЬ">
-          <div className="px-4 py-3.5 flex items-center justify-between">
+        {/* ── Budget ── */}
+        <div>
+          <p className="section-header">Бюджет</p>
+          <div className="neu-raised rounded-card px-5 py-4 flex items-center justify-between">
             <div className="flex-1">
-              <p className="text-xs text-text-secondary mb-1">Загальна сума на всі кредити</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.5px] mb-1" style={{ color: 'var(--text-secondary)' }}>
+                Загальна сума на всі кредити
+              </p>
               {editingBudget ? (
                 <div className="flex items-center gap-2">
                   <input
                     autoFocus
-                    className="flex-1 text-lg font-bold text-text-primary bg-transparent outline-none border-b border-sage"
+                    className="flex-1 text-[17px] font-bold bg-transparent outline-none"
+                    style={{ color: 'var(--text-primary)', borderBottom: '2px solid var(--accent)' }}
                     inputMode="decimal"
                     placeholder="0"
                     value={budgetText}
@@ -71,10 +78,10 @@ export function SettingsScreen({ onBack }: Props) {
                     onBlur={saveBudget}
                     onKeyDown={e => e.key === 'Enter' && saveBudget()}
                   />
-                  <span className="text-text-secondary">₴</span>
+                  <span className="text-[15px]" style={{ color: 'var(--text-secondary)' }}>₴</span>
                 </div>
               ) : (
-                <p className="text-lg font-bold text-text-primary">
+                <p className="text-[17px] font-bold" style={{ color: 'var(--text-primary)' }}>
                   {budgetText ? `${Number(budgetText).toLocaleString('uk-UA')} ₴` : 'Не задано'}
                 </p>
               )}
@@ -82,95 +89,112 @@ export function SettingsScreen({ onBack }: Props) {
             {!editingBudget && (
               <button
                 onClick={() => setEditingBudget(true)}
-                className="text-sage text-sm font-semibold ml-4 active:opacity-60"
+                className="text-[14px] font-semibold ml-4 active:opacity-60"
+                style={{ color: 'var(--accent)' }}
               >
                 Змінити
+                <svg className="inline ml-1" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
               </button>
             )}
           </div>
-        </Section>
+        </div>
 
-        {/* Notifications */}
-        <Section title="НАГАДУВАННЯ">
-          <Toggle
-            label="В день платежу"
-            desc="Нагадуємо о 10:00"
-            value={settings.notify_day_of}
-            onChange={v => update({ notify_day_of: v })}
-          />
-          <Toggle
-            label="За 1 день"
-            value={settings.notify_1_day_before}
-            onChange={v => update({ notify_1_day_before: v })}
-          />
-          <Toggle
-            label="За 3 дні"
-            value={settings.notify_3_days_before}
-            onChange={v => update({ notify_3_days_before: v })}
-          />
-        </Section>
+        {/* ── Notifications ── */}
+        <div>
+          <p className="section-header">Нагадування</p>
+          <div className="neu-raised rounded-card overflow-hidden">
+            <ToggleRow
+              label="В день платежу"
+              desc="Нагадуємо о 10:00"
+              value={settings.notify_day_of}
+              onChange={v => update({ notify_day_of: v })}
+            />
+            <Divider />
+            <ToggleRow
+              label="За 1 день"
+              value={settings.notify_1_day_before}
+              onChange={v => update({ notify_1_day_before: v })}
+            />
+            <Divider />
+            <ToggleRow
+              label="За 3 дні"
+              value={settings.notify_3_days_before}
+              onChange={v => update({ notify_3_days_before: v })}
+            />
+          </div>
+        </div>
 
-        {/* Strategy info */}
-        <Section title="СТРАТЕГІЯ ПОГАШЕННЯ">
-          <div className="px-4 py-3.5 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
-                {strategyLabel[settings.strategy] ?? 'Не обрано'}
-              </p>
-              {settings.strategy === 'none' && (
-                <p className="text-xs text-text-secondary mt-0.5">Оберіть у вкладці «План»</p>
-              )}
+        {/* ── Strategy ── */}
+        <div>
+          <p className="section-header">Погашення</p>
+          <div className="neu-raised rounded-card overflow-hidden">
+            <div className="px-5 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                  Стратегія
+                </p>
+                {settings.strategy === 'none' && (
+                  <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Оберіть у вкладці «План»
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[14px]" style={{ color: 'var(--text-secondary)' }}>
+                  {strategyLabel[settings.strategy] ?? 'Не обрано'}
+                </span>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
             </div>
-            {settings.strategy !== 'none' && (
-              <span className="text-xs bg-sage-light text-sage font-semibold px-2 py-1 rounded-lg">Активна</span>
-            )}
           </div>
-        </Section>
+        </div>
 
-        {/* App info */}
-        <Section title="ПРО ЗАСТОСУНОК">
-          <div className="px-4 py-3.5">
-            <p className="text-sm text-text-primary font-medium">БезБоргів</p>
-            <p className="text-xs text-text-secondary mt-0.5">bezborhiv.com · @bezborhivbot</p>
+        {/* ── About ── */}
+        <div>
+          <p className="section-header">Про застосунок</p>
+          <div className="neu-raised rounded-card px-5 py-4">
+            <p className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>БезБоргів</p>
+            <p className="text-[13px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>bezborhiv.com · @bezborhivbot</p>
           </div>
-        </Section>
+        </div>
 
       </div>
     </div>
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs font-bold text-text-secondary tracking-widest px-1 mb-2">{title}</p>
-      <div className="bg-white rounded-card shadow-card-sm divide-y divide-gray-100">
-        {children}
-      </div>
-    </div>
-  )
+function Divider() {
+  return <div style={{ height: 1, background: 'var(--divider)', margin: '0 20px' }} />
 }
 
-function Toggle({ label, desc, value, onChange }: {
-  label: string
-  desc?: string
-  value: boolean
-  onChange: (v: boolean) => void
+function ToggleRow({ label, desc, value, onChange }: {
+  label: string; desc?: string; value: boolean; onChange: (v: boolean) => void
 }) {
   return (
-    <div className="flex justify-between items-center px-4 py-3.5">
+    <div className="flex justify-between items-center px-5 py-4">
       <div>
-        <p className="text-sm text-text-primary">{label}</p>
-        {desc && <p className="text-xs text-text-secondary mt-0.5">{desc}</p>}
+        <p className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>{label}</p>
+        {desc && <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-secondary)' }}>{desc}</p>}
       </div>
       <button
         onClick={() => onChange(!value)}
-        className={`w-12 h-6 rounded-full transition-colors relative flex-none ml-4
-          ${value ? 'bg-sage' : 'bg-gray-200'}`}
+        className="w-[52px] h-[30px] rounded-pill relative flex-none ml-4 transition-all duration-200"
+        style={value
+          ? { background: 'var(--accent)', boxShadow: '5px 7px 10px rgba(216,90,48,0.45), -3px -3px 6px rgba(253,251,246,1.0)' }
+          : { boxShadow: 'inset 4px 4px 7px rgba(199,195,186,0.6), inset -4px -4px 7px rgba(253,251,246,1.0)', background: 'var(--bg)' }
+        }
       >
         <span
-          className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform
-            ${value ? 'translate-x-7' : 'translate-x-1'}`}
+          className="absolute top-[3px] w-6 h-6 rounded-icon transition-transform duration-200"
+          style={{
+            background: 'var(--bg)',
+            boxShadow: '2px 2px 4px rgba(199,195,186,0.8), -2px -2px 4px rgba(253,251,246,1.0)',
+            transform: value ? 'translateX(23px)' : 'translateX(3px)',
+          }}
         />
       </button>
     </div>

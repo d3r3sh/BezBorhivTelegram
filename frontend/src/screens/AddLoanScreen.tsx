@@ -3,11 +3,13 @@ import Decimal from 'decimal.js'
 import { loansApi } from '../api/loans'
 import { annuityPayment, isPaymentSufficient, isZeroRatePlan } from '../utils/calculator'
 import { formatAmount, todayISO } from '../utils/format'
+import { SegmentControl } from '../components/SegmentControl'
+import { InputField } from '../components/InputField'
 import { useBackButton } from '../hooks/useTelegram'
 import type { LoanDetail } from '../api/types'
 
 interface Props {
-  editLoanId?: string          // undefined → create mode
+  editLoanId?: string
   onDone: (loan: LoanDetail) => void
   onBack: () => void
 }
@@ -31,7 +33,6 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load loan data in edit mode
   useEffect(() => {
     if (!editLoanId) return
     loansApi.get(editLoanId).then(loan => {
@@ -45,31 +46,25 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
     })
   }, [editLoanId])
 
-  // Live preview
   const preview = (() => {
     try {
       const s = new Decimal(amount || '0')
       const n = parseInt(paymentsCount) || 0
       if (s.lte(0) || n <= 0) return null
-
       if (inputMode === 'rate') {
         const r = new Decimal(annualRate || '0')
         if (r.lt(0)) return null
         return { monthly: annuityPayment(s, r, n), rate: null, error: null }
       } else {
         const mp = new Decimal(monthlyPayment || '0')
-        if (!isPaymentSufficient(s, n, mp)) {
-          return { monthly: null, rate: null, error: 'Платіж × кількість < суми кредиту' }
-        }
-        if (isZeroRatePlan(s, n, mp)) {
-          return { monthly: mp, rate: new Decimal('0'), error: null }
-        }
+        if (!isPaymentSufficient(s, n, mp)) return { monthly: null, rate: null, error: 'Платіж × кількість < суми кредиту' }
+        if (isZeroRatePlan(s, n, mp)) return { monthly: mp, rate: new Decimal('0'), error: null }
         return { monthly: mp, rate: null, error: null }
       }
-    } catch {
-      return null
-    }
+    } catch { return null }
   })()
+
+  const isValid = !error && !preview?.error && preview?.monthly
 
   const validate = (): string | null => {
     if (!name.trim()) return 'Введіть назву'
@@ -103,9 +98,7 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
         ...(inputMode === 'rate' ? { annual_rate: annualRate } : { monthly_payment: monthlyPayment }),
         first_payment_date: firstDate,
       }
-      const loan = isEdit
-        ? await loansApi.update(editLoanId!, payload)
-        : await loansApi.create(payload)
+      const loan = isEdit ? await loansApi.update(editLoanId!, payload) : await loansApi.create(payload)
       onDone(loan)
     } catch (e) {
       setError((e as Error).message)
@@ -115,148 +108,140 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-cream safe-top safe-bottom pb-6">
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2">
-        <h1 className="text-xl font-bold text-text-primary">
+    <div className="min-h-screen safe-top pb-8" style={{ background: 'var(--bg)' }}>
+
+      {/* ── Header ── */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-4">
+        <button onClick={onBack} className="icon-btn w-[38px] h-[38px]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <span className="text-[17px] font-semibold" style={{ color: 'var(--text-primary)' }}>
           {isEdit ? 'Редагувати кредит' : 'Новий кредит'}
-        </h1>
-      </div>
-
-      <div className="px-4 flex flex-col gap-4">
-        {/* Scenario tabs */}
-        {!isEdit && (
-          <div className="flex bg-white rounded-button p-1 shadow-card-sm">
-            {(['new', 'existing'] as Scenario[]).map(s => (
-              <button
-                key={s}
-                onClick={() => setScenario(s)}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors
-                  ${scenario === s ? 'bg-sage text-white' : 'text-text-secondary'}`}
-              >
-                {s === 'new' ? 'Новий' : 'Вже плачу'}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Name */}
-        <Field label="Назва">
-          <input
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-            placeholder="Авто, Іпотека, Розстрочка…"
-            value={name}
-            onChange={e => setName(e.target.value)}
-          />
-        </Field>
-
-        {/* Amount */}
-        <Field label={scenario === 'existing' ? 'Поточний залишок, ₴' : 'Сума кредиту, ₴'}>
-          <input
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-            placeholder="100 000"
-            inputMode="decimal"
-            value={amount}
-            onChange={e => setAmount(e.target.value.replace(/\s/g, ''))}
-          />
-        </Field>
-
-        {/* Payments count */}
-        <Field label={scenario === 'existing' ? 'Платежів залишилось' : 'Кількість платежів'}>
-          <input
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-            placeholder="24"
-            inputMode="numeric"
-            value={paymentsCount}
-            onChange={e => setPaymentsCount(e.target.value)}
-          />
-        </Field>
-
-        {/* Input mode */}
-        <div className="flex bg-white rounded-button p-1 shadow-card-sm">
-          {(['rate', 'payment'] as InputMode[]).map(m => (
-            <button
-              key={m}
-              onClick={() => setInputMode(m)}
-              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-colors
-                ${inputMode === m ? 'bg-sage text-white' : 'text-text-secondary'}`}
-            >
-              {m === 'rate' ? 'Я знаю ставку' : 'Я знаю платіж'}
-            </button>
-          ))}
-        </div>
-
-        {inputMode === 'rate' ? (
-          <Field label="Річна ставка, %">
-            <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-              placeholder="24"
-              inputMode="decimal"
-              value={annualRate}
-              onChange={e => setAnnualRate(e.target.value)}
-            />
-          </Field>
-        ) : (
-          <Field label="Щомісячний платіж, ₴">
-            <input
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-              placeholder="5 287"
-              inputMode="decimal"
-              value={monthlyPayment}
-              onChange={e => setMonthlyPayment(e.target.value.replace(/\s/g, ''))}
-            />
-          </Field>
-        )}
-
-        {/* Date */}
-        <Field label={scenario === 'existing' ? 'Наступний платіж' : 'Перший платіж'}>
-          <input
-            type="date"
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-text-primary bg-white outline-none focus:border-sage"
-            value={firstDate}
-            onChange={e => setFirstDate(e.target.value)}
-          />
-        </Field>
-
-        {/* Preview */}
-        {preview && !preview.error && preview.monthly && (
-          <div className="bg-sage-light rounded-xl px-4 py-3 text-sm text-sage-dark">
-            {inputMode === 'rate' ? (
-              <>Щомісячний платіж: <strong>{formatAmount(preview.monthly.toString())}</strong></>
-            ) : (
-              preview.rate?.isZero()
-                ? <>Ставка: <strong>0% (розстрочка)</strong></>
-                : <>Ставка підбирається сервером</>
-            )}
-          </div>
-        )}
-
-        {/* Error */}
-        {(error || preview?.error) && (
-          <p className="text-terracotta text-sm px-1">{error || preview?.error}</p>
-        )}
-
-        {/* Save */}
+        </span>
         <button
           onClick={handleSave}
           disabled={loading}
-          className="w-full bg-sage text-white font-bold py-4 rounded-button
-                     active:bg-sage-dark transition-colors disabled:opacity-50"
+          className="text-[15px] font-bold rounded-pill px-[18px] py-2.5 transition-all"
+          style={isValid
+            ? { background: '#2A2A2E', color: 'white', boxShadow: '5px 5px 8px rgba(199,195,186,0.7), -4px -4px 6px rgba(253,251,246,1.0)' }
+            : { background: 'var(--bg)', color: 'var(--text-secondary)', boxShadow: '5px 5px 8px rgba(199,195,186,0.7), -4px -4px 6px rgba(253,251,246,1.0)' }
+          }
         >
-          {loading ? 'Збереження…' : (isEdit ? 'Зберегти' : 'Додати кредит')}
+          {loading ? '…' : 'Зберегти'}
         </button>
       </div>
-    </div>
-  )
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide px-1">
-        {label}
-      </label>
-      {children}
+      <div className="px-5 flex flex-col gap-4">
+
+        {/* Scenario segment */}
+        {!isEdit && (
+          <SegmentControl
+            tabs={[{ value: 'new', label: 'Новий' }, { value: 'existing', label: 'Вже плачу' }]}
+            value={scenario}
+            onChange={v => setScenario(v as Scenario)}
+          />
+        )}
+
+        {/* Name */}
+        <InputField
+          label="Назва кредиту"
+          placeholder="Авто, Іпотека, Розстрочка…"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
+
+        {/* Amount */}
+        <InputField
+          label={scenario === 'existing' ? 'Поточний залишок, ₴' : 'Сума кредиту, ₴'}
+          placeholder="100 000"
+          inputMode="decimal"
+          value={amount}
+          onChange={e => setAmount(e.target.value.replace(/\s/g, ''))}
+        />
+
+        {/* Payments count */}
+        <InputField
+          label={scenario === 'existing' ? 'Платежів залишилось' : 'Кількість платежів'}
+          placeholder="24"
+          inputMode="numeric"
+          value={paymentsCount}
+          onChange={e => setPaymentsCount(e.target.value)}
+        />
+
+        {/* Input mode segment */}
+        <div>
+          <p className="input-label mb-2">Що ви знаєте?</p>
+          <SegmentControl
+            tabs={[{ value: 'rate', label: 'Ставку' }, { value: 'payment', label: 'Суму платежу' }]}
+            value={inputMode}
+            onChange={v => setInputMode(v as InputMode)}
+          />
+        </div>
+
+        {inputMode === 'rate' ? (
+          <InputField
+            label="Річна ставка, %"
+            placeholder="24"
+            inputMode="decimal"
+            value={annualRate}
+            onChange={e => setAnnualRate(e.target.value)}
+          />
+        ) : (
+          <InputField
+            label="Щомісячний платіж, ₴"
+            placeholder="5 287"
+            inputMode="decimal"
+            value={monthlyPayment}
+            onChange={e => setMonthlyPayment(e.target.value.replace(/\s/g, ''))}
+          />
+        )}
+
+        {/* Date */}
+        <InputField
+          label={scenario === 'existing' ? 'Наступний платіж' : 'Перший платіж'}
+          type="date"
+          value={firstDate}
+          onChange={e => setFirstDate(e.target.value)}
+        />
+
+        {/* Error block */}
+        {(error || preview?.error) && (
+          <div className="flex items-center gap-2 rounded-small px-4 py-3" style={{ background: 'rgba(196,100,74,0.08)' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--terracotta)">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4m0 4h.01"/>
+            </svg>
+            <span className="text-[13px]" style={{ color: 'var(--terracotta)' }}>{error || preview?.error}</span>
+          </div>
+        )}
+
+      </div>
+
+      {/* ── Bottom preview panel (appears when valid data) ── */}
+      {preview && !preview.error && preview.monthly && (
+        <div
+          className="fixed bottom-0 left-0 right-0 px-5 pt-5 pb-8"
+          style={{
+            background: 'var(--accent)',
+            borderRadius: '24px 24px 0 0',
+            boxShadow: '5px 7px 10px rgba(216,90,48,0.45), -3px -3px 6px rgba(253,251,246,1.0)',
+            animation: 'slideUpFade 200ms ease-in-out',
+          }}
+        >
+          <p className="text-[13px] font-semibold mb-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            Щомісячний платіж
+          </p>
+          <p className="text-[28px] font-bold" style={{ color: 'white' }}>
+            {formatAmount(preview.monthly.toString())}
+          </p>
+          <p className="text-[13px] mt-1" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            {inputMode === 'payment' && preview.rate?.isZero()
+              ? 'Розстрочка (ставка 0%)'
+              : 'Останній платіж може відрізнятись'}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

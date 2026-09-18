@@ -3,12 +3,6 @@ import { ProgressBar } from './ProgressBar'
 import { formatAmount, formatShortDate } from '../utils/format'
 import type { Loan } from '../api/types'
 
-const PALETTE = [
-  '#5C8A6B', '#C4664A', '#4A90D9', '#D4896E',
-  '#7B68EE', '#2ECC71', '#E74C3C', '#F39C12',
-  '#1ABC9C', '#9B59B6',
-]
-
 interface Props {
   loan: Loan
   onClick: () => void
@@ -19,60 +13,56 @@ export function LoanCard({ loan, onClick }: Props) {
   const initial = new Decimal(String(loan.initial_amount))
   const paid = initial.minus(balance)
   const pct = initial.isZero() ? 0 : paid.div(initial).mul(100).toNumber()
+  const total = loan.payments_made + loan.payments_remaining
 
-  const color = PALETTE[(loan.color_index - 1) % PALETTE.length]
   const isOverdue = loan.is_overdue
 
   return (
     <button
-      className={`w-full text-left bg-white rounded-card shadow-card p-4 flex flex-col gap-3
-                  active:scale-[0.98] transition-transform
-                  ${isOverdue ? 'border-l-4 border-terracotta' : ''}`}
+      className="w-full text-left rounded-card p-[20px] flex flex-col gap-3 active:scale-[0.98] transition-transform"
+      style={isOverdue ? {
+        background: 'rgba(196,100,74,0.08)',
+        border: '2px solid rgba(196,100,74,0.5)',
+        boxShadow: '7px 7px 10px rgba(199,195,186,0.75), -7px -7px 10px rgba(253,251,246,1.0)',
+      } : {
+        background: 'var(--bg)',
+        boxShadow: '7px 7px 10px rgba(199,195,186,0.75), -7px -7px 10px rgba(253,251,246,1.0)',
+      }}
       onClick={onClick}
     >
-      {/* Header */}
+      {/* Row 1: name + overdue badge */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span
-            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-            style={{ backgroundColor: color }}
-          />
-          <span className="font-semibold text-text-primary truncate text-[15px]">{loan.name}</span>
-        </div>
+        <span className="text-[14px] font-semibold truncate" style={{ color: 'var(--text-secondary)' }}>
+          {loan.name}
+        </span>
         {isOverdue && (
-          <span className="text-xs font-bold text-terracotta bg-terracotta/10 px-2 py-0.5 rounded-full flex-shrink-0">
+          <span className="badge-overdue flex-shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--terracotta)">
+              <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 5v6m0 3v1"/>
+            </svg>
             Прострочено
           </span>
         )}
       </div>
 
-      {/* Total debt */}
-      <div className="text-2xl font-bold text-text-primary tracking-tight">
+      {/* Row 2: total debt */}
+      <div className="text-[26px] font-bold leading-none" style={{ color: 'var(--text-primary)' }}>
         {formatAmount(loan.total_debt)}
       </div>
 
-      {/* Progress */}
-      <ProgressBar percent={pct} />
+      {/* Row 3: progress */}
+      <ProgressBar percent={pct} overdue={isOverdue} />
 
-      {/* Footer */}
-      <div className="flex justify-between items-center text-sm">
-        <div className="flex items-center gap-1.5">
-          {loan.next_payment_date ? (
-            <>
-              <span className={`font-semibold ${isOverdue ? 'text-terracotta' : 'text-text-primary'}`}>
-                {formatAmount(loan.next_payment_amount ?? loan.monthly_payment)}
-              </span>
-              <span className="text-text-secondary">·</span>
-              <span className={`${isOverdue ? 'text-terracotta' : 'text-text-secondary'}`}>
-                {formatShortDate(loan.next_payment_date)}
-              </span>
-            </>
-          ) : (
-            <span className="text-green-600 font-semibold text-sm">Виплачено ✓</span>
-          )}
-        </div>
-        <span className="text-text-secondary text-xs">
-          {loan.payments_made} з {loan.payments_made + loan.payments_remaining}
+      {/* Row 4: payments count + next payment */}
+      <div className="flex justify-between items-center">
+        <span className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+          {loan.payments_made} з {total} платежів
+        </span>
+        <span className="text-[12px]" style={{ color: isOverdue ? 'var(--terracotta)' : 'var(--text-secondary)' }}>
+          {loan.next_payment_date
+            ? `${formatAmount(loan.next_payment_amount ?? loan.monthly_payment)} · ${formatShortDate(loan.next_payment_date)}`
+            : <span style={{ color: 'var(--sage)', fontWeight: 600 }}>Виплачено ✓</span>
+          }
         </span>
       </div>
     </button>

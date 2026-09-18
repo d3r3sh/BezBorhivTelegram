@@ -2,28 +2,168 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --tg-theme-bg-color: #F7F4ED;
-  --tg-theme-text-color: #2C2C2C;
-  --tg-theme-button-color: #5C8A6B;
+/* ─── Animations ─── */
+@keyframes slideUpFade {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-body {
-  background-color: var(--tg-theme-bg-color, #F7F4ED);
-  color: var(--tg-theme-text-color, #2C2C2C);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+/* ─── Design tokens ─── */
+:root {
+  --bg:            #E8E5DF;
+  --surface:       #E8E5DF;
+  --shadow-light:  #FDFBF6;
+  --shadow-dark:   #C7C3BA;
+  --divider:       #D0CCC4;
+  --accent:        #E0672F;
+  --accent-deep:   #D85A30;
+  --sage:          #5C8A6B;
+  --terracotta:    #C4664A;
+  --clay:          #6B8CA8;
+  --segment-bg:    #DEDAD4;
+  --text-primary:  #2A2A2E;
+  --text-secondary:#8A8A8E;
+}
+
+/* ─── Base ─── */
+html, body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Figtree', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior: none;
 }
 
-/* Safe area for iPhone notch / home indicator */
+button, a { -webkit-tap-highlight-color: transparent; }
+
+.scroll-hide::-webkit-scrollbar { display: none; }
+.scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
 .safe-top    { padding-top: env(safe-area-inset-top, 0px); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
-/* Prevent tap highlight on interactive elements */
-button, a { -webkit-tap-highlight-color: transparent; }
+/* ─── Neumorphic system ─── */
+@layer components {
 
-/* Scrollable without scrollbar */
-.scroll-hide::-webkit-scrollbar { display: none; }
-.scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  /* Raised — картки, кнопки, іконки */
+  .neu-raised {
+    background: var(--bg);
+    box-shadow:
+      7px 7px 10px rgba(199, 195, 186, 0.75),
+      -7px -7px 10px rgba(253, 251, 246, 1.0);
+  }
+
+  /* Raised small — 6px offset для менших елементів */
+  .neu-raised-sm {
+    background: var(--bg);
+    box-shadow:
+      6px 6px 9px rgba(199, 195, 186, 0.65),
+      -6px -6px 9px rgba(253, 251, 246, 1.0);
+  }
+
+  /* Inset — поля вводу, доріжки прогрес-бару, вимкнений toggle */
+  .neu-inset {
+    background: var(--bg);
+    box-shadow:
+      inset 4px 4px 7px rgba(199, 195, 186, 0.6),
+      inset -4px -4px 7px rgba(253, 251, 246, 1.0);
+  }
+
+  /* Accent raised — primary CTA (coral) */
+  .neu-accent {
+    background: var(--accent);
+    color: white;
+    box-shadow:
+      5px 7px 10px rgba(216, 90, 48, 0.45),
+      -3px -3px 6px rgba(253, 251, 246, 1.0);
+  }
+
+  /* Dark raised — secondary primary CTA */
+  .neu-dark {
+    background: #2A2A2E;
+    color: white;
+    box-shadow:
+      5px 5px 8px rgba(199, 195, 186, 0.7),
+      -4px -4px 6px rgba(253, 251, 246, 1.0);
+  }
+
+  /* ─── Button base ─── */
+  .btn {
+    @apply flex items-center justify-center font-bold text-[15px] rounded-button
+           px-9 py-4 w-full transition-all duration-150 active:scale-[0.97];
+  }
+
+  .btn-primary   { @apply btn neu-dark; }
+  .btn-accent    { @apply btn neu-accent; }
+  .btn-secondary {
+    @apply btn neu-raised text-[length:var(--text-primary)] font-semibold text-[14px];
+    color: var(--text-primary);
+  }
+
+  /* ─── Input field ─── */
+  .input-field {
+    @apply neu-inset rounded-small px-[18px] py-[14px] w-full
+           text-[16px] text-[color:var(--text-primary)] outline-none
+           placeholder:text-[color:var(--text-secondary)];
+    background: var(--bg);
+  }
+
+  .input-label {
+    @apply block text-[11px] font-semibold uppercase tracking-[0.5px]
+           text-[color:var(--text-secondary)] mb-1.5;
+  }
+
+  /* ─── Section header ─── */
+  .section-header {
+    @apply text-[11px] font-bold uppercase tracking-[1px]
+           text-[color:var(--text-secondary)] mb-3;
+  }
+
+  /* ─── Icon button (круглий) ─── */
+  .icon-btn {
+    @apply neu-raised-sm rounded-icon flex items-center justify-center
+           active:scale-[0.95] transition-transform;
+  }
+
+  /* ─── Segment control ─── */
+  .segment-control {
+    @apply neu-inset rounded-seg p-1.5 flex;
+  }
+
+  .segment-tab {
+    @apply flex-1 py-1.5 text-[13px] font-semibold rounded-seg-tab
+           transition-all duration-150 text-center;
+  }
+
+  .segment-tab-active {
+    @apply neu-raised-sm text-[color:var(--text-primary)];
+  }
+
+  .segment-tab-inactive {
+    @apply text-[color:var(--text-secondary)];
+  }
+
+  /* ─── Progress bar ─── */
+  .progress-track {
+    @apply neu-inset rounded-pill h-2.5 overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-pill transition-all duration-500;
+    background: var(--sage);
+    box-shadow: 2px 2px 3px rgba(92, 138, 107, 0.5);
+  }
+
+  .progress-fill-overdue {
+    background: var(--terracotta);
+    box-shadow: 2px 2px 3px rgba(196, 100, 74, 0.5);
+  }
+
+  /* ─── Badge ─── */
+  .badge-overdue {
+    @apply inline-flex items-center gap-1 text-[11px] font-bold rounded-pill px-2.5 py-1;
+    color: var(--terracotta);
+    background: rgba(196, 100, 74, 0.12);
+  }
+}

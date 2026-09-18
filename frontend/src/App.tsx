@@ -1,10 +1,6 @@
-/**
- * App — state-based navigation with bottom tab bar for main screens.
- * Detail screens (loan-detail, add-loan, etc.) use Telegram BackButton.
- */
 import { useState } from 'react'
 import WebApp from '@twa-dev/sdk'
-import { useTelegramReady, useTelegramTheme } from './hooks/useTelegram'
+import { useTelegramReady } from './hooks/useTelegram'
 import { LandingPage } from './screens/LandingPage'
 import { HomeScreen } from './screens/HomeScreen'
 import { AddLoanScreen } from './screens/AddLoanScreen'
@@ -29,40 +25,90 @@ type Screen =
   | { name: 'archive' }
 
 const TABS = [
-  { name: 'home',     icon: '🏠', label: 'Головна' },
-  { name: 'strategy', icon: '🎯', label: 'План' },
-  { name: 'settings', icon: '⚙️', label: 'Налаштування' },
+  { name: 'home',     label: 'Кредити',      icon: HouseIcon },
+  { name: 'strategy', label: 'План',         icon: ChartBarIcon },
+  { name: 'archive',  label: 'Архів',        icon: ArchiveIcon },
+  { name: 'settings', label: 'Ще',           icon: EllipsisIcon },
 ] as const
 
 type TabName = typeof TABS[number]['name']
 const TAB_NAMES: string[] = TABS.map(t => t.name)
 
+function HouseIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
+      <path d="M9 21V12h6v9" />
+    </svg>
+  )
+}
+
+function ChartBarIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="12" width="4" height="9" rx="1" />
+      <rect x="10" y="7" width="4" height="14" rx="1" />
+      <rect x="17" y="3" width="4" height="18" rx="1" />
+    </svg>
+  )
+}
+
+function ArchiveIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="5" rx="1" />
+      <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+      <path d="M10 13h4" />
+    </svg>
+  )
+}
+
+function EllipsisIcon({ active: _active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+      <circle cx="5" cy="12" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="19" cy="12" r="1.5" />
+    </svg>
+  )
+}
+
 function TabBar({ current, onTab }: { current: string; onTab: (name: TabName) => void }) {
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-40"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0 z-40 flex"
+      style={{
+        background: 'var(--bg)',
+        boxShadow: '-2px -2px 8px rgba(253,251,246,0.9), 2px 0 8px rgba(199,195,186,0.4)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
     >
-      {TABS.map(tab => (
-        <button
-          key={tab.name}
-          onClick={() => onTab(tab.name)}
-          className={`flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors
-            ${current === tab.name ? 'text-sage' : 'text-text-secondary'}`}
-        >
-          <span className="text-xl leading-none">{tab.icon}</span>
-          <span className={`text-xs font-medium ${current === tab.name ? 'text-sage' : 'text-text-secondary'}`}>
-            {tab.label}
-          </span>
-        </button>
-      ))}
+      {TABS.map(tab => {
+        const active = current === tab.name
+        const Icon = tab.icon
+        return (
+          <button
+            key={tab.name}
+            onClick={() => onTab(tab.name)}
+            className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors"
+            style={{ color: active ? 'var(--accent)' : 'var(--text-secondary)' }}
+          >
+            <Icon active={active} />
+            <span
+              className="text-[10px] font-semibold"
+              style={{ color: active ? 'var(--accent)' : 'var(--text-secondary)' }}
+            >
+              {tab.label}
+            </span>
+          </button>
+        )
+      })}
     </div>
   )
 }
 
 export default function App() {
   useTelegramReady()
-  useTelegramTheme()
 
   if (!WebApp.initData) return <LandingPage />
 
@@ -93,7 +139,6 @@ export default function App() {
             onArchiveClick={() => go({ name: 'archive' })}
           />
         )
-
       case 'add-loan':
         return (
           <AddLoanScreen
@@ -102,7 +147,6 @@ export default function App() {
             onBack={() => go({ name: 'home' })}
           />
         )
-
       case 'loan-detail':
         return (
           <LoanDetailScreen
@@ -112,7 +156,6 @@ export default function App() {
             onEditLoan={id => go({ name: 'add-loan', loanId: id })}
           />
         )
-
       case 'record-payment':
         return (
           <RecordPaymentScreen
@@ -122,10 +165,8 @@ export default function App() {
             onBack={() => go({ name: 'loan-detail', loanId: screen.loanId })}
           />
         )
-
       case 'settings':
         return <SettingsScreen onBack={home} />
-
       case 'strategy':
         return (
           <StrategyScreen
@@ -134,7 +175,6 @@ export default function App() {
             onAddLoan={() => go({ name: 'add-loan' })}
           />
         )
-
       case 'calendar':
         return (
           <CalendarScreen
@@ -142,7 +182,6 @@ export default function App() {
             onLoanClick={id => go({ name: 'loan-detail', loanId: id })}
           />
         )
-
       case 'debt':
         return (
           <DebtScreen
@@ -150,7 +189,6 @@ export default function App() {
             onCalendarClick={() => go({ name: 'calendar' })}
           />
         )
-
       case 'archive':
         return (
           <ArchiveScreen
@@ -161,10 +199,11 @@ export default function App() {
     }
   })()
 
+  const tabBarHeight = 'calc(4rem + env(safe-area-inset-bottom, 0px))'
+
   return (
     <>
-      {/* Extra bottom padding only when tab bar is visible */}
-      <div className={showTabBar ? 'pb-16' : ''}>
+      <div style={showTabBar ? { paddingBottom: tabBarHeight } : {}}>
         {content}
       </div>
       {showTabBar && <TabBar current={screen.name} onTab={goTab} />}

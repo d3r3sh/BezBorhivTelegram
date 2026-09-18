@@ -1,21 +1,21 @@
 import type { CalendarEvent } from '../api/types'
 
 export const LOAN_COLORS: Record<number, string> = {
-  1: '#4A90E2',
-  2: '#E2844A',
-  3: '#27AE60',
-  4: '#9B59B6',
-  5: '#E74C3C',
-  6: '#1ABC9C',
-  7: '#E8A838',
-  8: '#E91E63',
-  9: '#795548',
-  10: '#607D8B',
+  1:  '#4A90D9',
+  2:  '#9B59B6',
+  3:  '#E74C3C',
+  4:  '#1ABC9C',
+  5:  '#F39C12',
+  6:  '#2ECC71',
+  7:  '#E91E63',
+  8:  '#00BCD4',
+  9:  '#FF5722',
+  10: '#795548',
 }
 
-export const PAID_COLOR = '#22C55E'
-export const OVERDUE_COLOR = '#F97316'
-export const FALLBACK_COLOR = '#8E8E8E'
+export const PAID_COLOR    = '#5C8A6B' // --sage
+export const OVERDUE_COLOR = '#C4664A' // --terracotta
+export const FALLBACK_COLOR = '#8A8A8E'
 
 export const MONTH_NAMES_UK = [
   'Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень',

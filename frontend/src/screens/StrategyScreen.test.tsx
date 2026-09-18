@@ -83,7 +83,7 @@ describe('StrategyScreen', () => {
     })
     render(<StrategyScreen onDone={vi.fn()} onBack={vi.fn()} onAddLoan={vi.fn()} />)
     await waitFor(() => {
-      expect(screen.getByText('План погашення')).toBeInTheDocument()
+      expect(screen.getByText('План')).toBeInTheDocument()
     })
   })
 
