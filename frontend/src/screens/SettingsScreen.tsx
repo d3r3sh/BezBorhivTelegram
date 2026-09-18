@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { settingsApi } from '../api/settings'
-import { formatAmount } from '../utils/format'
 import { useBackButton } from '../hooks/useTelegram'
+import { LoadingSpinner } from '../components/LoadingSpinner'
 import type { UserSettings, SettingsUpdatePayload } from '../api/types'
 
 interface Props {
@@ -13,37 +13,88 @@ export function SettingsScreen({ onBack }: Props) {
 
   const [settings, setSettings] = useState<UserSettings | null>(null)
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [budgetText, setBudgetText] = useState('')
+  const [editingBudget, setEditingBudget] = useState(false)
 
   useEffect(() => {
-    settingsApi.get().then(s => { setSettings(s); setLoading(false) })
+    settingsApi.get().then(s => {
+      setSettings(s)
+      setBudgetText(s.monthly_budget ? String(s.monthly_budget) : '')
+      setLoading(false)
+    })
   }, [])
 
   const update = async (patch: SettingsUpdatePayload) => {
     if (!settings) return
-    setSaving(true)
     const updated = await settingsApi.update(patch)
     setSettings(updated)
-    setSaving(false)
   }
 
-  if (loading || !settings) return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="w-8 h-8 border-3 border-sage-light border-t-sage rounded-full animate-spin" />
-    </div>
-  )
+  const saveBudget = async () => {
+    setEditingBudget(false)
+    const val = budgetText.trim().replace(/\s/g, '')
+    const num = parseFloat(val)
+    await update({ monthly_budget: val && num > 0 ? val : null })
+  }
+
+  if (loading || !settings) return <LoadingSpinner className="h-screen" />
+
+  const strategyLabel: Record<string, string> = {
+    none: 'Не обрано',
+    avalanche: '🌊 Лавина',
+    snowball: '⛄️ Сніжний ком',
+  }
 
   return (
-    <div className="min-h-screen bg-cream safe-top safe-bottom pb-6">
-      <div className="px-4 pt-4 pb-2">
-        <h1 className="text-xl font-bold text-text-primary">Налаштування</h1>
+    <div className="min-h-screen bg-cream safe-top">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4">
+        <h1 className="text-2xl font-bold text-text-primary">Налаштування</h1>
       </div>
 
-      <div className="px-4 flex flex-col gap-5">
+      <div className="px-4 pb-8 flex flex-col gap-5">
+
+        {/* Budget */}
+        <Section title="БЮДЖЕТ НА МІСЯЦЬ">
+          <div className="px-4 py-3.5 flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-text-secondary mb-1">Загальна сума на всі кредити</p>
+              {editingBudget ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    autoFocus
+                    className="flex-1 text-lg font-bold text-text-primary bg-transparent outline-none border-b border-sage"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={budgetText}
+                    onChange={e => setBudgetText(e.target.value)}
+                    onBlur={saveBudget}
+                    onKeyDown={e => e.key === 'Enter' && saveBudget()}
+                  />
+                  <span className="text-text-secondary">₴</span>
+                </div>
+              ) : (
+                <p className="text-lg font-bold text-text-primary">
+                  {budgetText ? `${Number(budgetText).toLocaleString('uk-UA')} ₴` : 'Не задано'}
+                </p>
+              )}
+            </div>
+            {!editingBudget && (
+              <button
+                onClick={() => setEditingBudget(true)}
+                className="text-sage text-sm font-semibold ml-4 active:opacity-60"
+              >
+                Змінити
+              </button>
+            )}
+          </div>
+        </Section>
+
         {/* Notifications */}
         <Section title="НАГАДУВАННЯ">
           <Toggle
             label="В день платежу"
+            desc="Нагадуємо о 10:00"
             value={settings.notify_day_of}
             onChange={v => update({ notify_day_of: v })}
           />
@@ -59,31 +110,31 @@ export function SettingsScreen({ onBack }: Props) {
           />
         </Section>
 
-        {/* Budget */}
-        <Section title="БЮДЖЕТ">
-          <div className="flex justify-between items-center px-4 py-3">
-            <span className="text-text-primary text-sm">На місяць</span>
-            <span className="text-text-secondary text-sm">
-              {settings.monthly_budget
-                ? formatAmount(settings.monthly_budget)
-                : 'Не задано'}
-            </span>
+        {/* Strategy info */}
+        <Section title="СТРАТЕГІЯ ПОГАШЕННЯ">
+          <div className="px-4 py-3.5 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-text-primary">
+                {strategyLabel[settings.strategy] ?? 'Не обрано'}
+              </p>
+              {settings.strategy === 'none' && (
+                <p className="text-xs text-text-secondary mt-0.5">Оберіть у вкладці «План»</p>
+              )}
+            </div>
+            {settings.strategy !== 'none' && (
+              <span className="text-xs bg-sage-light text-sage font-semibold px-2 py-1 rounded-lg">Активна</span>
+            )}
           </div>
         </Section>
 
-        {/* Strategy */}
-        <Section title="СТРАТЕГІЯ">
-          <div className="flex justify-between items-center px-4 py-3">
-            <span className="text-text-primary text-sm">Поточна</span>
-            <span className="text-text-secondary text-sm">
-              {{ none: 'Не обрано', avalanche: 'Лавина', snowball: 'Сніжний ком' }[settings.strategy]}
-            </span>
+        {/* App info */}
+        <Section title="ПРО ЗАСТОСУНОК">
+          <div className="px-4 py-3.5">
+            <p className="text-sm text-text-primary font-medium">БезБоргів</p>
+            <p className="text-xs text-text-secondary mt-0.5">bezborhiv.com · @bezborhivbot</p>
           </div>
         </Section>
 
-        {saving && (
-          <p className="text-text-secondary text-xs text-center">Збереження…</p>
-        )}
       </div>
     </div>
   )
@@ -100,15 +151,21 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function Toggle({ label, value, onChange }: {
-  label: string; value: boolean; onChange: (v: boolean) => void
+function Toggle({ label, desc, value, onChange }: {
+  label: string
+  desc?: string
+  value: boolean
+  onChange: (v: boolean) => void
 }) {
   return (
-    <div className="flex justify-between items-center px-4 py-3">
-      <span className="text-text-primary text-sm">{label}</span>
+    <div className="flex justify-between items-center px-4 py-3.5">
+      <div>
+        <p className="text-sm text-text-primary">{label}</p>
+        {desc && <p className="text-xs text-text-secondary mt-0.5">{desc}</p>}
+      </div>
       <button
         onClick={() => onChange(!value)}
-        className={`w-12 h-6 rounded-full transition-colors relative
+        className={`w-12 h-6 rounded-full transition-colors relative flex-none ml-4
           ${value ? 'bg-sage' : 'bg-gray-200'}`}
       >
         <span

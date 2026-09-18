@@ -3,7 +3,6 @@ import Decimal from 'decimal.js'
 import WebApp from '@twa-dev/sdk'
 import { loansApi } from '../api/loans'
 import { paymentsApi } from '../api/payments'
-import { ProgressBar } from '../components/ProgressBar'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { formatAmount, formatDate, formatShortDate } from '../utils/format'
 import { useBackButton } from '../hooks/useTelegram'
@@ -19,6 +18,16 @@ interface Props {
 }
 
 const today = new Date().toISOString().slice(0, 10)
+
+const PALETTE = [
+  '#5C8A6B', '#C4664A', '#4A90D9', '#D4896E',
+  '#7B68EE', '#2ECC71', '#E74C3C', '#F39C12',
+  '#1ABC9C', '#9B59B6',
+]
+
+function getLoanColor(colorIndex: number) {
+  return PALETTE[(colorIndex - 1) % PALETTE.length]
+}
 
 export function LoanDetailScreen({ loanId, onBack, onRecordPayment, onEditLoan }: Props) {
   useBackButton(onBack)
@@ -123,45 +132,72 @@ export function LoanDetailScreen({ loanId, onBack, onRecordPayment, onEditLoan }
     ? loan.schedule[loan.schedule.length - 1].date
     : null
 
+  const loanColor = getLoanColor(loan.color_index)
+
   return (
     <div className="min-h-screen bg-cream safe-top safe-bottom pb-6">
-      {/* Header */}
-      <div className="bg-white shadow-card-sm px-4 pt-4 pb-5">
-        <h1 className="text-lg font-bold text-text-primary mb-1">{loan.name}</h1>
+      {/* Header with color accent */}
+      <div className="bg-white shadow-card-sm">
+        {/* Color accent bar */}
+        <div className="h-1 w-full" style={{ backgroundColor: loanColor }} />
 
-        {isPaidOff ? (
-          <p className="text-sage font-semibold text-lg">Виплачено 100% ✓</p>
-        ) : (
-          <>
-            <p className="text-2xl font-bold text-text-primary mb-2">
-              {formatAmount(loan.current_balance)}
-            </p>
-            <ProgressBar percent={pct} />
-            <div className="flex justify-between mt-1 text-xs text-text-secondary">
-              <span>{loan.payments_made} з {loan.payments_made + loan.payments_remaining} платежів</span>
-              <span>{pct.toFixed(0)}%</span>
+        <div className="px-4 pt-4 pb-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: loanColor }} />
+              <h1 className="text-[15px] font-semibold text-text-secondary">{loan.name}</h1>
             </div>
-          </>
-        )}
-
-        {loan.next_payment_date && !isPaidOff && (
-          <div className="mt-3 text-sm text-text-secondary">
-            Наступний:{' '}
-            <strong className="text-text-primary">
-              {formatAmount(loan.next_payment_amount ?? loan.monthly_payment)}
-            </strong>
-            {' · '}
-            {formatShortDate(loan.next_payment_date)}
+            <button
+              onClick={() => onEditLoan(loanId)}
+              className="text-text-secondary text-sm px-2 py-1 rounded-lg active:bg-gray-100"
+            >
+              ✏️ Редагувати
+            </button>
           </div>
-        )}
 
-        {/* Forecast closure — FR-DET-5 */}
-        {closingDate && !isPaidOff && (
-          <div className="mt-2 text-xs text-text-secondary">
-            Закриється:{' '}
-            <span className="text-text-primary font-medium">{formatDate(closingDate)}</span>
-          </div>
-        )}
+          {isPaidOff ? (
+            <p className="text-sage font-bold text-2xl">Виплачено 100% ✓</p>
+          ) : (
+            <>
+              <p className="text-3xl font-bold text-text-primary tracking-tight mb-3">
+                {formatAmount(loan.current_balance)}
+              </p>
+
+              {/* Colored progress bar */}
+              <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden mb-2">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(100, Math.max(0, pct))}%`, backgroundColor: loanColor }}
+                />
+              </div>
+
+              <div className="flex justify-between text-xs text-text-secondary mb-3">
+                <span>{loan.payments_made} з {loan.payments_made + loan.payments_remaining} платежів</span>
+                <span className="font-medium">{pct.toFixed(0)}% виплачено</span>
+              </div>
+
+              {/* Next payment + forecast */}
+              <div className="bg-cream rounded-xl px-4 py-3 flex justify-between items-center">
+                <div>
+                  <p className="text-xs text-text-secondary mb-0.5">Наступний платіж</p>
+                  <p className="font-bold text-text-primary">
+                    {formatAmount(loan.next_payment_amount ?? loan.monthly_payment)}
+                    {loan.is_overdue && <span className="text-terracotta text-xs ml-2">Прострочено!</span>}
+                  </p>
+                  {loan.next_payment_date && (
+                    <p className="text-xs text-text-secondary">{formatShortDate(loan.next_payment_date)}</p>
+                  )}
+                </div>
+                {closingDate && (
+                  <div className="text-right">
+                    <p className="text-xs text-text-secondary mb-0.5">Закриється</p>
+                    <p className="text-xs font-medium text-text-primary">{formatDate(closingDate)}</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Actions */}
@@ -169,21 +205,15 @@ export function LoanDetailScreen({ loanId, onBack, onRecordPayment, onEditLoan }
         <div className="px-4 pt-4 flex gap-2">
           <button
             onClick={() => onRecordPayment(loanId, 'regular')}
-            className="flex-1 bg-sage text-white font-semibold py-3 rounded-button text-sm active:bg-sage-dark"
+            className="flex-1 bg-sage text-white font-bold py-3.5 rounded-button text-sm active:bg-sage-dark shadow-sm"
           >
             💳 Внести платіж
           </button>
           <button
             onClick={() => onRecordPayment(loanId, 'extra')}
-            className="bg-white border border-sage text-sage font-semibold py-3 px-4 rounded-button text-sm active:bg-sage-light"
+            className="bg-white border border-sage text-sage font-semibold py-3.5 px-4 rounded-button text-sm active:bg-sage-light"
           >
             + Додатково
-          </button>
-          <button
-            onClick={() => onEditLoan(loanId)}
-            className="bg-white border border-gray-200 text-text-primary font-semibold py-3 px-4 rounded-button text-sm"
-          >
-            ✏️
           </button>
         </div>
       )}
