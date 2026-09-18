@@ -10,7 +10,8 @@ from sqlalchemy.orm import Session
 from backend.config import settings
 from backend.db.models import User
 from backend.db.session import get_db
-from backend.services.auth import validate_init_data
+from typing import Optional
+from backend.services.auth import validate_init_data, validate_telegram_widget
 from backend.services.jwt_service import create_access_token
 
 router = APIRouter(tags=["auth"])
@@ -19,6 +20,16 @@ router = APIRouter(tags=["auth"])
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class TelegramWidgetData(BaseModel):
+    id: int
+    first_name: str
+    last_name: Optional[str] = None
+    username: Optional[str] = None
+    photo_url: Optional[str] = None
+    auth_date: int
+    hash: str
 
 
 def _get_or_create_user(db: Session, telegram_id: int) -> User:
@@ -65,3 +76,17 @@ def get_token(
     _get_or_create_user(db, telegram_id)
 
     return TokenOut(access_token=create_access_token(telegram_id))
+
+
+@router.post("/auth/telegram-widget", response_model=TokenOut)
+def telegram_widget_auth(
+    data: TelegramWidgetData,
+    db: Session = Depends(get_db),
+) -> TokenOut:
+    """
+    Verify Telegram Login Widget data and return a JWT access token.
+    Called by the web client after the user clicks "Увійти через Telegram".
+    """
+    validate_telegram_widget(data.model_dump(), settings.BOT_TOKEN, settings.AUTH_MAX_AGE)
+    _get_or_create_user(db, data.id)
+    return TokenOut(access_token=create_access_token(data.id))

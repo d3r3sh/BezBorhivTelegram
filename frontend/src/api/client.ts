@@ -19,10 +19,18 @@ class ApiError extends Error {
   }
 }
 
+export const JWT_KEY = 'bb_jwt'
+
 function authHeader(): Record<string, string> {
+  // Mini App takes priority
   const initData = WebApp.initData
-  if (!initData) return {}
-  return { Authorization: `tma ${initData}` }
+  if (initData) return { Authorization: `tma ${initData}` }
+
+  // Web: JWT stored after Telegram Login Widget auth
+  const jwt = localStorage.getItem(JWT_KEY)
+  if (jwt) return { Authorization: `Bearer ${jwt}` }
+
+  return {}
 }
 
 export async function apiFetch<T>(

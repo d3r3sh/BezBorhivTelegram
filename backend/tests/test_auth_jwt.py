@@ -18,7 +18,7 @@ from backend.config import settings
 from backend.db.models import Base, User
 from backend.db.session import get_db
 from backend.main import app
-from backend.services.auth import generate_test_init_data
+from backend.services.auth import generate_test_init_data, generate_test_widget_data
 from backend.services.jwt_service import create_access_token
 
 TEST_BOT_TOKEN = "7123456789:AATestBotTokenForTestingOnly12345678"
@@ -132,3 +132,30 @@ def test_tma_auth_still_works_alongside_jwt(raw_client: TestClient):
     init_data = generate_test_init_data(TEST_BOT_TOKEN, TEST_TELEGRAM_ID)
     resp = raw_client.get("/api/loans", headers={"Authorization": f"tma {init_data}"})
     assert resp.status_code == 200
+
+
+# ── Telegram Login Widget endpoint ────────────────────────────────────────────
+
+def test_telegram_widget_returns_jwt(raw_client: TestClient):
+    widget_data = generate_test_widget_data(TEST_BOT_TOKEN, TEST_TELEGRAM_ID)
+    resp = raw_client.post("/api/auth/telegram-widget", json=widget_data)
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "access_token" in body
+    assert body["token_type"] == "bearer"
+    payload = jwt.decode(body["access_token"], settings.JWT_SECRET, algorithms=["HS256"])
+    assert payload["sub"] == str(TEST_TELEGRAM_ID)
+
+
+def test_telegram_widget_invalid_hash_returns_401(raw_client: TestClient):
+    widget_data = generate_test_widget_data(TEST_BOT_TOKEN, TEST_TELEGRAM_ID)
+    widget_data["hash"] = "0" * 64  # tampered hash
+    resp = raw_client.post("/api/auth/telegram-widget", json=widget_data)
+    assert resp.status_code == 401
+
+
+def test_telegram_widget_missing_hash_returns_401(raw_client: TestClient):
+    widget_data = generate_test_widget_data(TEST_BOT_TOKEN, TEST_TELEGRAM_ID)
+    del widget_data["hash"]
+    resp = raw_client.post("/api/auth/telegram-widget", json=widget_data)
+    assert resp.status_code == 422  # Pydantic rejects missing required field

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { useTelegramReady } from './hooks/useTelegram'
 import { LandingPage } from './screens/LandingPage'
+import { JWT_KEY } from './api/client'
 import { HomeScreen } from './screens/HomeScreen'
 import { AddLoanScreen } from './screens/AddLoanScreen'
 import { LoanDetailScreen } from './screens/LoanDetailScreen'
@@ -110,7 +111,11 @@ function TabBar({ current, onTab }: { current: string; onTab: (name: TabName) =>
 export default function App() {
   useTelegramReady()
 
-  if (!WebApp.initData) return <LandingPage />
+  const [webAuthed, setWebAuthed] = useState(() => !!localStorage.getItem(JWT_KEY))
+
+  if (!WebApp.initData && !webAuthed) {
+    return <LandingPage onWebAuth={() => setWebAuthed(true)} />
+  }
 
   const [screen, setScreen] = useState<Screen>({ name: 'home' })
   const [refreshKey, setRefreshKey] = useState(0)
