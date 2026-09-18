@@ -222,7 +222,7 @@ export function AddLoanScreen({ editLoanId, onDone, onBack }: Props) {
         {preview && !preview.error && preview.monthly && (
           <div className="bg-sage-light rounded-xl px-4 py-3 text-sm text-sage-dark">
             {inputMode === 'rate' ? (
-              <>Щомісячний платіж: <strong>{formatAmount(preview.monthly)}</strong></>
+              <>Щомісячний платіж: <strong>{formatAmount(preview.monthly.toString())}</strong></>
             ) : (
               preview.rate?.isZero()
                 ? <>Ставка: <strong>0% (розстрочка)</strong></>

@@ -25,7 +25,7 @@ export function useBackButton(onBack: () => void) {
 /** Expose Telegram theme colors as CSS variables. */
 export function useTelegramTheme() {
   useEffect(() => {
-    const p = WebApp.themeParams as Record<string, string>
+    const p = WebApp.themeParams as unknown as Record<string, string>
     if (!p) return
     const root = document.documentElement
     if (p.bg_color) root.style.setProperty('--tg-theme-bg-color', p.bg_color)

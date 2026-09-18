@@ -5,7 +5,7 @@ import { loansApi } from '../api/loans'
 import { paymentsApi } from '../api/payments'
 import { ProgressBar } from '../components/ProgressBar'
 import { LoadingSpinner } from '../components/LoadingSpinner'
-import { formatAmount, formatDate, formatShortDate } from '../utils/format'
+import { formatAmount, formatShortDate } from '../utils/format'
 import { useBackButton } from '../hooks/useTelegram'
 import type { LoanDetail, Payment } from '../api/types'
 
@@ -258,7 +258,7 @@ function DiffLabel({ actual, planned }: { actual: string; planned: string }) {
   const positive = diff.gt(0)
   return (
     <span className={`text-xs font-semibold ${positive ? 'text-sage' : 'text-terracotta'}`}>
-      {positive ? '+' : '−'}{formatAmount(diff.abs())}
+      {positive ? '+' : '−'}{formatAmount(diff.abs().toString())}
     </span>
   )
 }

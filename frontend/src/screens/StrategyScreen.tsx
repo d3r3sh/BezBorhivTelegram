@@ -26,7 +26,7 @@ export function StrategyScreen({ onDone, onBack, onAddLoan }: Props) {
 
   const [stage, setStage] = useState<Stage>('loading-init')
   const [loans, setLoans] = useState<Loan[]>([])
-  const [settings, setSettings] = useState<UserSettings | null>(null)
+  const [, setSettings] = useState<UserSettings | null>(null)
   const [plan, setPlan] = useState<PlanOut | null>(null)
   const [selectedStrategy, setSelectedStrategy] = useState<Strategy>('avalanche')
   const [budgetText, setBudgetText] = useState('')
@@ -168,13 +168,13 @@ export function StrategyScreen({ onDone, onBack, onAddLoan }: Props) {
             <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between text-sm">
               <div>
                 <p className="text-text-secondary text-xs">Обов'язкові</p>
-                <p className="font-semibold">{formatAmount(mandatoryTotal)}</p>
+                <p className="font-semibold">{formatAmount(mandatoryTotal.toString())}</p>
               </div>
               {freeBalance && (
                 <div className="text-right">
                   <p className="text-text-secondary text-xs">Вільно</p>
                   <p className={`font-semibold ${freeBalance.gt(0) ? 'text-sage' : 'text-terracotta'}`}>
-                    {freeBalance.gt(0) ? formatAmount(freeBalance) : '—'}
+                    {freeBalance.gt(0) ? formatAmount(freeBalance.toString()) : '—'}
                   </p>
                 </div>
               )}
