@@ -56,14 +56,23 @@ def create_router() -> Router:
     async def got_amount(message: Message, state: FSMContext) -> None:
         amount = parse_amount(message.text)
         if amount is None:
-            await message.answer("Не вдалося розпізнати суму. Введіть число, наприклад: 150000")
+            await message.answer(
+                "Не вдалося розпізнати суму.\n"
+                "Введіть ціле число або десяткове через кому, наприклад:\n"
+                "<code>150000</code> або <code>150 000</code>",
+                parse_mode="HTML",
+            )
             return
-        await state.update_data(amount=str(amount))
-        await state.set_state(AddLoan.input_mode)
-        await message.answer(
-            "Що ви знаєте про цей кредит?",
-            reply_markup=input_mode_keyboard(),
-        )
+        try:
+            await state.update_data(amount=str(amount))
+            await state.set_state(AddLoan.input_mode)
+            await message.answer(
+                "Що ви знаєте про цей кредит?",
+                reply_markup=input_mode_keyboard(),
+            )
+        except Exception as e:
+            await state.clear()
+            await message.answer(f"❌ Помилка: {e}\nСпробуйте /addloan знову.")
 
     # ── Step 3: input mode ───────────────────────────────────────────────────
 

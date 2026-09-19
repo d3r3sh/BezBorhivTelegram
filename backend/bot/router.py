@@ -75,4 +75,16 @@ def create_router() -> Router:
             parse_mode="HTML",
         )
 
+    # ── Catch-all: підказка коли контекст загубився ──────────────────────────
+    @router.message(F.text)
+    async def cmd_unknown(message: Message, state: FSMContext) -> None:
+        current = await state.get_state()
+        if current is None:
+            await message.answer(
+                "Не розумію цю команду. Скористайтесь кнопками або:\n"
+                "/addloan — додати кредит\n"
+                "/pay — внести платіж\n"
+                "/loans — мої кредити",
+            )
+
     return router
