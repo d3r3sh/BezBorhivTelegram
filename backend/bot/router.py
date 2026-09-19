@@ -5,7 +5,7 @@ Registers all command and conversation handlers.
 
 from __future__ import annotations
 
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
@@ -41,6 +41,14 @@ def create_router() -> Router:
         )
         await message.answer(
             "Відкрити повний застосунок:",
+            reply_markup=main_menu(settings.WEBAPP_URL),
+        )
+
+    # ── Відкрити застосунок ──────────────────────────────────────────────────
+    @router.message(F.text == "📱 Відкрити застосунок")
+    async def cmd_open_app(message: Message) -> None:
+        await message.answer(
+            "Натисніть кнопку нижче:",
             reply_markup=main_menu(settings.WEBAPP_URL),
         )
 
