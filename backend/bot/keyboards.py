@@ -5,41 +5,24 @@ from aiogram.types import (
 )
 
 
-def main_menu(webapp_url: str) -> InlineKeyboardMarkup:
-    """Inline keyboard with Web App button — shown on /start."""
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(
-            text="📱 Відкрити БезБоргів",
-            web_app=WebAppInfo(url=webapp_url),
-        )
-    ]])
-
-
-def main_reply_keyboard() -> ReplyKeyboardMarkup:
-    """Persistent reply keyboard for quick bot actions."""
+def main_reply_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📋 Мої кредити"), KeyboardButton(text="💳 Внести платіж")],
-            [KeyboardButton(text="➕ Додати кредит"), KeyboardButton(text="📱 Відкрити застосунок")],
+            [KeyboardButton(text="➕ Додати кредит"), KeyboardButton(text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url))],
         ],
         resize_keyboard=True,
         input_field_placeholder="Оберіть дію або введіть команду",
     )
 
 
-def input_mode_keyboard() -> InlineKeyboardMarkup:
-    """Choose between rate and monthly payment."""
+def open_app_inline(webapp_url: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text="📊 Ставку (% річних)", callback_data="mode:rate"),
-        InlineKeyboardButton(text="💰 Суму платежу (₴)", callback_data="mode:payment"),
+        InlineKeyboardButton(text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url))
     ]])
 
 
-def loans_keyboard(loans: list) -> InlineKeyboardMarkup:
-    """
-    Inline keyboard with one button per loan.
-    loans: list of LoanOut with .id, .name, .current_balance
-    """
+def loans_select_keyboard(loans: list, webapp_url: str) -> InlineKeyboardMarkup:
     from backend.bot.utils import fmt_amount
     buttons = [
         [InlineKeyboardButton(
@@ -48,19 +31,22 @@ def loans_keyboard(loans: list) -> InlineKeyboardMarkup:
         )]
         for loan in loans
     ]
+    buttons.append([InlineKeyboardButton(
+        text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url)
+    )])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def payment_type_keyboard() -> InlineKeyboardMarkup:
-    """Choose between regular and extra payment."""
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text="💳 Плановий", callback_data="ptype:regular"),
-        InlineKeyboardButton(text="⚡ Дострокове", callback_data="ptype:extra"),
+        InlineKeyboardButton(text="⚡ Достроковий", callback_data="ptype:extra"),
     ]])
 
 
-def open_app_button(webapp_url: str) -> InlineKeyboardMarkup:
-    """Single button to open the Mini App."""
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url))
-    ]])
+def payment_amount_keyboard(recommended: str, minimum: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"✅ Внести рекомендовану ({recommended})", callback_data="amount:recommended")],
+        [InlineKeyboardButton(text=f"Внести мінімальну ({minimum})", callback_data="amount:minimum")],
+        [InlineKeyboardButton(text="✏️ Ввести свою суму", callback_data="amount:custom")],
+    ])

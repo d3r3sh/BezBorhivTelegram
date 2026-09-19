@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 
-from backend.bot.utils import run_db, fmt_amount, fmt_date
-from backend.bot.keyboards import open_app_button
+from backend.bot.utils import run_db, fmt_amount
+from backend.bot.keyboards import open_app_inline
 from backend.config import settings
 from backend.services.loan_service import get_loans
 
@@ -20,34 +22,25 @@ def create_router() -> Router:
     async def cmd_my_loans(message: Message) -> None:
         telegram_id = message.from_user.id
         loans = await run_db(telegram_id, lambda db, user: get_loans(db, user, archived=False))
+        active = [l for l in loans if not l.is_archived]
 
-        if not loans:
+        if not active:
             await message.answer(
-                "У вас поки немає активних кредитів.\n"
-                "Натисніть «➕ Додати кредит» щоб додати перший.",
+                "У вас ще немає кредиту. Ви можете додати кредит у застосунку.",
+                reply_markup=open_app_inline(settings.WEBAPP_URL),
             )
             return
 
-        lines = ["📋 <b>Ваші кредити:</b>\n"]
-        for i, loan in enumerate(loans, 1):
-            status = "🔴 Прострочено" if loan.is_overdue else "🟢"
-            next_info = ""
-            if loan.next_payment_date:
-                next_info = (
-                    f"\n   ↳ Наступний: "
-                    f"{fmt_amount(loan.next_payment_amount or loan.monthly_payment)} "
-                    f"· {fmt_date(loan.next_payment_date)}"
-                )
-            lines.append(
-                f"{i}. {status} <b>{loan.name}</b>\n"
-                f"   Залишок: {fmt_amount(loan.current_balance)}"
-                f"{next_info}"
-            )
+        total = sum(Decimal(str(loan.current_balance)) for loan in active)
+        lines = ["📋 <b>Мої кредити</b>\n"]
+        for loan in active:
+            lines.append(f"• {loan.name} — {fmt_amount(loan.current_balance)}")
+        lines.append(f"\n<b>Загальний борг: {fmt_amount(total)}</b>")
 
         await message.answer(
             "\n".join(lines),
             parse_mode="HTML",
-            reply_markup=open_app_button(settings.WEBAPP_URL),
+            reply_markup=open_app_inline(settings.WEBAPP_URL),
         )
 
     return router

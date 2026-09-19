@@ -53,10 +53,8 @@ async def lifespan(app: FastAPI):
             await bot.set_my_commands([
                 BotCommand(command="start",   description="Головне меню"),
                 BotCommand(command="loans",   description="Мої кредити"),
-                BotCommand(command="addloan", description="Додати кредит"),
                 BotCommand(command="pay",     description="Внести платіж"),
                 BotCommand(command="cancel",  description="Скасувати поточну дію"),
-                BotCommand(command="help",    description="Довідка"),
             ])
             logger.info("Bot commands registered")
         except Exception as e:

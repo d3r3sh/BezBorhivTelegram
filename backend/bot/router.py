@@ -11,13 +11,12 @@ from aiogram.fsm.state import default_state
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from backend.bot.keyboards import main_menu, main_reply_keyboard
+from backend.bot.keyboards import main_reply_keyboard
 from backend.bot.handlers import add_loan, record_payment, my_loans
 from backend.config import settings
 
 
 def create_router() -> Router:
-    """Return a new Router with all handlers registered."""
     router = Router()
 
     # ── /start ──────────────────────────────────────────────────────────────
@@ -25,27 +24,10 @@ def create_router() -> Router:
     async def cmd_start(message: Message) -> None:
         name = message.from_user.first_name or "друже"
         await message.answer(
-            f"👋 <b>Вітаємо, {name}!</b>\n\n"
-            "БезБоргів допоможе відстежувати кредити та виплати.\n\n"
-            "<b>Що можна зробити прямо тут:</b>\n"
-            "📋 Переглянути свої кредити\n"
-            "➕ Додати новий кредит\n"
-            "💳 Зафіксувати платіж\n\n"
-            "🎯 Стратегія та детальна аналітика — у застосунку:",
-            parse_mode="HTML",
-            reply_markup=main_reply_keyboard(),
-        )
-        await message.answer(
-            "Відкрити повний застосунок:",
-            reply_markup=main_menu(settings.WEBAPP_URL),
-        )
-
-    # ── Відкрити застосунок ──────────────────────────────────────────────────
-    @router.message(F.text == "📱 Відкрити застосунок")
-    async def cmd_open_app(message: Message) -> None:
-        await message.answer(
-            "Натисніть кнопку нижче:",
-            reply_markup=main_menu(settings.WEBAPP_URL),
+            f"Привіт, {name}! 👋\n\n"
+            "Я бот додатку БезБоргів — тут ти можеш швидко переглянути "
+            "свої кредити та внести платіж.",
+            reply_markup=main_reply_keyboard(settings.WEBAPP_URL),
         )
 
     # ── /cancel ─────────────────────────────────────────────────────────────
@@ -54,37 +36,24 @@ def create_router() -> Router:
         current = await state.get_state()
         await state.clear()
         if current:
-            await message.answer("❌ Скасовано.", reply_markup=main_reply_keyboard())
+            await message.answer("❌ Скасовано.", reply_markup=main_reply_keyboard(settings.WEBAPP_URL))
         else:
-            await message.answer("Немає активної дії.", reply_markup=main_reply_keyboard())
+            await message.answer("Немає активної дії.", reply_markup=main_reply_keyboard(settings.WEBAPP_URL))
 
-    # ── /help ────────────────────────────────────────────────────────────────
-    @router.message(Command("help"))
-    async def cmd_help(message: Message) -> None:
-        await message.answer(
-            "<b>Команди бота:</b>\n\n"
-            "/loans — переглянути кредити\n"
-            "/addloan — відкрити застосунок для додавання\n"
-            "/pay — внести платіж\n"
-            "/cancel — скасувати поточну дію\n\n"
-            "🎯 Обрати стратегію погашення можна лише у застосунку.",
-            parse_mode="HTML",
-        )
-
-    # ── Sub-routers (checked after parent's own specific handlers) ───────────
+    # ── Sub-routers ──────────────────────────────────────────────────────────
     router.include_router(my_loans.create_router())
     router.include_router(add_loan.create_router())
     router.include_router(record_payment.create_router())
 
-    # ── Catch-all у окремому sub-роутері — спрацьовує ОСТАННІМ ─────────────
+    # ── Catch-all (last) ─────────────────────────────────────────────────────
     fallback = Router()
 
     @fallback.message(default_state, F.text, ~F.text.startswith("/"))
     async def cmd_unknown(message: Message) -> None:
         await message.answer(
-            "Не розумію цю команду. Скористайтесь кнопками або:\n"
-            "/pay — внести платіж\n"
-            "/loans — мої кредити",
+            "Скористайтесь кнопками меню або:\n"
+            "/loans — мої кредити\n"
+            "/pay — внести платіж",
         )
 
     router.include_router(fallback)
