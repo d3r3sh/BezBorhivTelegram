@@ -77,7 +77,7 @@ def create_router() -> Router:
         )
 
     # ── Catch-all: підказка коли контекст загубився ──────────────────────────
-    @router.message(default_state, F.text)
+    @router.message(default_state, F.text, ~F.text.startswith("/"))
     async def cmd_unknown(message: Message) -> None:
         await message.answer(
             "Не розумію цю команду. Скористайтесь кнопками або:\n"
