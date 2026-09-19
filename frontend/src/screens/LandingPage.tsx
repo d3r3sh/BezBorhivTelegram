@@ -96,8 +96,8 @@ export function LandingPage(_: Props) {
             Відстежуй кредити, плануй погашення і закривай борги швидше
           </p>
 
-          {/* Telegram Login Widget */}
-          <div id="tg-login-widget" className="flex justify-center md:justify-start mb-4" />
+          {/* Telegram Login Widget — color-scheme:light forces light mode in Chrome dark mode */}
+          <div id="tg-login-widget" className="flex justify-center md:justify-start mb-4" style={{ colorScheme: 'light' }} />
 
           <div className="flex items-center gap-4 justify-center md:justify-start mb-4">
             <div className="h-px flex-1 max-w-[80px]" style={{ background: 'var(--divider)' }} />
