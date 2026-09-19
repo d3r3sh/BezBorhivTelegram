@@ -43,6 +43,21 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .safe-top    { padding-top: env(safe-area-inset-top, 0px); }
 .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
+/* Responsive top padding: 60px on mobile (safe area), 32px on desktop */
+.screen-pt {
+  padding-top: max(60px, env(safe-area-inset-top, 0px) + 16px);
+}
+
+/* Bottom padding for mobile tab bar; removed on desktop (sidebar takes over) */
+.tab-bar-pb {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .screen-pt { padding-top: 2rem; }
+  .tab-bar-pb { padding-bottom: 0; }
+}
+
 /* ─── Neumorphic system ─── */
 @layer components {
 

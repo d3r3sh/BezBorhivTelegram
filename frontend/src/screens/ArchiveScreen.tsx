@@ -47,7 +47,7 @@ export function ArchiveScreen({ onBack, onLoanClick }: Props) {
   if (loading) return <LoadingSpinner className="h-screen" />
 
   return (
-    <div className="min-h-screen pb-8" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+    <div className="min-h-screen screen-pt pb-8" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
       <div className="px-5 pb-4">

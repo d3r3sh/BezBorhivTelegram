@@ -1,5 +1,4 @@
 import { useState } from 'react'
-
 import WebApp from '@twa-dev/sdk'
 import { useTelegramReady } from './hooks/useTelegram'
 import { LandingPage } from './screens/LandingPage'
@@ -13,6 +12,7 @@ import { StrategyScreen } from './screens/StrategyScreen'
 import { CalendarScreen } from './screens/CalendarScreen'
 import { DebtScreen } from './screens/DebtScreen'
 import { ArchiveScreen } from './screens/ArchiveScreen'
+import { Sidebar } from './components/Sidebar'
 import type { LoanDetail } from './api/types'
 
 type Screen =
@@ -210,14 +210,30 @@ export default function App() {
     }
   })()
 
-  const tabBarHeight = 'calc(4rem + env(safe-area-inset-bottom, 0px))'
-
   return (
-    <>
-      <div style={showTabBar ? { paddingBottom: tabBarHeight } : {}}>
-        {content}
+    <div className="md:flex" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+
+      {/* Sidebar — desktop only */}
+      {showTabBar && (
+        <Sidebar current={screen.name} onTab={goTab} />
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0">
+        <div className="md:max-w-[740px] md:mx-auto w-full">
+          <div className={showTabBar ? 'tab-bar-pb' : ''}>
+            {content}
+          </div>
+        </div>
       </div>
-      {showTabBar && <TabBar current={screen.name} onTab={goTab} />}
-    </>
+
+      {/* Bottom tab bar — mobile only */}
+      {showTabBar && (
+        <div className="md:hidden">
+          <TabBar current={screen.name} onTab={goTab} />
+        </div>
+      )}
+
+    </div>
   )
 }

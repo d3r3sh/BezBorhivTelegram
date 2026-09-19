@@ -50,7 +50,7 @@ export function SettingsScreen({ onBack, onLogout }: Props) {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+    <div className="min-h-screen screen-pt" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
       <div className="px-5 pb-4">

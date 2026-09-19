@@ -89,7 +89,7 @@ export function StrategyScreen({ onDone, onBack, onAddLoan }: Props) {
   // ── Onboarding ──
   if (stage === 'onboarding') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 gap-8" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+      <div className="min-h-screen screen-pt flex flex-col items-center justify-center px-6 gap-8" style={{ background: 'var(--bg)' }}>
         <div
           className="w-[140px] h-[140px] rounded-icon flex items-center justify-center"
           style={{ boxShadow: '8px 8px 14px rgba(199,195,186,0.75), -8px -8px 14px rgba(253,251,246,1.0)', background: 'var(--bg)' }}
@@ -129,7 +129,7 @@ export function StrategyScreen({ onDone, onBack, onAddLoan }: Props) {
   // ── Budget ──
   if (stage === 'budget') {
     return (
-      <div className="min-h-screen" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+      <div className="min-h-screen screen-pt" style={{ background: 'var(--bg)' }}>
         <div className="flex items-center px-5 pb-4 gap-3">
           <button onClick={() => setStage('onboarding')} className="icon-btn w-[38px] h-[38px]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" strokeWidth="2.5" strokeLinecap="round">
@@ -204,7 +204,7 @@ export function StrategyScreen({ onDone, onBack, onAddLoan }: Props) {
 
   // ── Result ──
   return (
-    <div className="min-h-screen pb-6" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+    <div className="min-h-screen screen-pt pb-6" style={{ background: 'var(--bg)' }}>
       <div className="px-5 pb-2">
         <h1 className="font-serif font-semibold text-[30px] leading-none" style={{ color: 'var(--text-primary)' }}>
           План

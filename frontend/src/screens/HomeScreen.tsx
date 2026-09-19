@@ -42,7 +42,7 @@ export function HomeScreen({
   const allPaid = summary ? Number(summary.remaining_this_month) === 0 : false
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)', paddingTop: 'max(60px, env(safe-area-inset-top, 0px) + 16px)' }}>
+    <div className="min-h-screen screen-pt" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 pb-2">
