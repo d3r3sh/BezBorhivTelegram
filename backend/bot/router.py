@@ -20,11 +20,6 @@ def create_router() -> Router:
     """Return a new Router with all handlers registered."""
     router = Router()
 
-    # Include sub-routers (each call returns a fresh Router instance)
-    router.include_router(my_loans.create_router())
-    router.include_router(add_loan.create_router())
-    router.include_router(record_payment.create_router())
-
     # ── /start ──────────────────────────────────────────────────────────────
     @router.message(CommandStart())
     async def cmd_start(message: Message) -> None:
@@ -69,21 +64,29 @@ def create_router() -> Router:
         await message.answer(
             "<b>Команди бота:</b>\n\n"
             "/loans — переглянути кредити\n"
-            "/addloan — додати кредит\n"
-            "/pay — зафіксувати платіж\n"
+            "/addloan — відкрити застосунок для додавання\n"
+            "/pay — внести платіж\n"
             "/cancel — скасувати поточну дію\n\n"
             "🎯 Обрати стратегію погашення можна лише у застосунку.",
             parse_mode="HTML",
         )
 
-    # ── Catch-all: підказка коли контекст загубився ──────────────────────────
-    @router.message(default_state, F.text, ~F.text.startswith("/"))
+    # ── Sub-routers (checked after parent's own specific handlers) ───────────
+    router.include_router(my_loans.create_router())
+    router.include_router(add_loan.create_router())
+    router.include_router(record_payment.create_router())
+
+    # ── Catch-all у окремому sub-роутері — спрацьовує ОСТАННІМ ─────────────
+    fallback = Router()
+
+    @fallback.message(default_state, F.text, ~F.text.startswith("/"))
     async def cmd_unknown(message: Message) -> None:
         await message.answer(
             "Не розумію цю команду. Скористайтесь кнопками або:\n"
-            "/addloan — додати кредит\n"
             "/pay — внести платіж\n"
             "/loans — мої кредити",
         )
+
+    router.include_router(fallback)
 
     return router
