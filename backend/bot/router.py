@@ -37,7 +37,7 @@ def create_router() -> Router:
             "💳 Зафіксувати платіж\n\n"
             "🎯 Стратегія та детальна аналітика — у застосунку:",
             parse_mode="HTML",
-            reply_markup=main_reply_keyboard(settings.WEBAPP_URL),
+            reply_markup=main_reply_keyboard(),
         )
         await message.answer(
             "Відкрити повний застосунок:",
@@ -50,9 +50,9 @@ def create_router() -> Router:
         current = await state.get_state()
         await state.clear()
         if current:
-            await message.answer("❌ Скасовано.", reply_markup=main_reply_keyboard(settings.WEBAPP_URL))
+            await message.answer("❌ Скасовано.", reply_markup=main_reply_keyboard())
         else:
-            await message.answer("Немає активної дії.", reply_markup=main_reply_keyboard(settings.WEBAPP_URL))
+            await message.answer("Немає активної дії.", reply_markup=main_reply_keyboard())
 
     # ── /help ────────────────────────────────────────────────────────────────
     @router.message(Command("help"))

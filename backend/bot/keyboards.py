@@ -15,12 +15,12 @@ def main_menu(webapp_url: str) -> InlineKeyboardMarkup:
     ]])
 
 
-def main_reply_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
-    """Persistent reply keyboard for quick actions."""
+def main_reply_keyboard() -> ReplyKeyboardMarkup:
+    """Persistent reply keyboard for quick bot actions."""
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📋 Мої кредити"), KeyboardButton(text="💳 Внести платіж")],
-            [KeyboardButton(text="➕ Додати кредит"), KeyboardButton(text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url))],
+            [KeyboardButton(text="➕ Додати кредит")],
         ],
         resize_keyboard=True,
         input_field_placeholder="Оберіть дію або введіть команду",

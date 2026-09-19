@@ -171,7 +171,7 @@ def create_router() -> Router:
                 f"📅 Перший платіж: {fmt_date(loan.first_payment_date)}\n"
                 f"📊 Залишок: {fmt_amount(loan.current_balance)}",
                 parse_mode="HTML",
-                reply_markup=main_reply_keyboard(settings.WEBAPP_URL),
+                reply_markup=main_reply_keyboard(),
             )
         except InsufficientPaymentError:
             await message.answer(

@@ -49,15 +49,18 @@ async def lifespan(app: FastAPI):
         dp = Dispatcher()
         dp.include_router(create_router())
 
-        await bot.set_my_commands([
-            BotCommand(command="start",   description="Головне меню"),
-            BotCommand(command="loans",   description="Мої кредити"),
-            BotCommand(command="addloan", description="Додати кредит"),
-            BotCommand(command="pay",     description="Внести платіж"),
-            BotCommand(command="cancel",  description="Скасувати поточну дію"),
-            BotCommand(command="help",    description="Довідка"),
-        ])
-        logger.info("Bot commands registered")
+        try:
+            await bot.set_my_commands([
+                BotCommand(command="start",   description="Головне меню"),
+                BotCommand(command="loans",   description="Мої кредити"),
+                BotCommand(command="addloan", description="Додати кредит"),
+                BotCommand(command="pay",     description="Внести платіж"),
+                BotCommand(command="cancel",  description="Скасувати поточну дію"),
+                BotCommand(command="help",    description="Довідка"),
+            ])
+            logger.info("Bot commands registered")
+        except Exception as e:
+            logger.warning("Could not register bot commands: %s", e)
 
         scheduler = create_scheduler(bot)
         scheduler.start()

@@ -149,7 +149,7 @@ def create_router() -> Router:
                 f"💰 Сума: <b>{fmt_amount(amount)}</b>\n"
                 f"📅 Дата: {fmt_date(date.today())}",
                 parse_mode="HTML",
-                reply_markup=main_reply_keyboard(settings.WEBAPP_URL),
+                reply_markup=main_reply_keyboard(),
             )
         except Exception as e:
             await message.answer(
