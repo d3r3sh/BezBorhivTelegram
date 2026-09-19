@@ -30,6 +30,16 @@ def create_router() -> Router:
             reply_markup=main_reply_keyboard(settings.WEBAPP_URL),
         )
 
+    # ── Відкрити застосунок ──────────────────────────────────────────────────
+    from backend.bot.keyboards import open_app_inline
+
+    @router.message(F.text == "📱 Відкрити застосунок")
+    async def cmd_open_app(message: Message) -> None:
+        await message.answer(
+            "Щоб відкрити застосунок, натисніть нижче.",
+            reply_markup=open_app_inline(settings.WEBAPP_URL),
+        )
+
     # ── /cancel ─────────────────────────────────────────────────────────────
     @router.message(Command("cancel"))
     async def cmd_cancel(message: Message, state: FSMContext) -> None:

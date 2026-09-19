@@ -9,7 +9,7 @@ def main_reply_keyboard(webapp_url: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="📋 Мої кредити"), KeyboardButton(text="💳 Внести платіж")],
-            [KeyboardButton(text="➕ Додати кредит"), KeyboardButton(text="📱 Відкрити застосунок", web_app=WebAppInfo(url=webapp_url))],
+            [KeyboardButton(text="➕ Додати кредит"), KeyboardButton(text="📱 Відкрити застосунок")],
         ],
         resize_keyboard=True,
         input_field_placeholder="Оберіть дію або введіть команду",
