@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
         from aiogram import Bot, Dispatcher
         from aiogram.client.default import DefaultBotProperties
         from aiogram.enums import ParseMode
+        from aiogram.types import BotCommand
 
         from backend.bot.router import create_router
         from backend.notifications.scheduler import create_scheduler
@@ -44,8 +45,19 @@ async def lifespan(app: FastAPI):
             token=settings.BOT_TOKEN,
             default=DefaultBotProperties(parse_mode=ParseMode.HTML),
         )
+        # aiogram 3.x defaults to MemoryStorage — FSM works out of the box
         dp = Dispatcher()
         dp.include_router(create_router())
+
+        await bot.set_my_commands([
+            BotCommand(command="start",   description="Головне меню"),
+            BotCommand(command="loans",   description="Мої кредити"),
+            BotCommand(command="addloan", description="Додати кредит"),
+            BotCommand(command="pay",     description="Внести платіж"),
+            BotCommand(command="cancel",  description="Скасувати поточну дію"),
+            BotCommand(command="help",    description="Довідка"),
+        ])
+        logger.info("Bot commands registered")
 
         scheduler = create_scheduler(bot)
         scheduler.start()
@@ -70,7 +82,7 @@ async def lifespan(app: FastAPI):
         polling_task.cancel()
         try:
             await polling_task
-        except asyncio.CancelledError:
+        except (asyncio.CancelledError, Exception):
             pass
 
 
